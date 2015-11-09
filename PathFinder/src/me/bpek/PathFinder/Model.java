@@ -15,9 +15,6 @@ import java.util.Vector;
 
 import javax.swing.Timer;
 
-import me.bpek.Snakes.State;
-import me.bpek.Snakes.AStarSearch.Node;
-
 public class Model extends Observable implements ActionListener {
 	
 	// ==== Properties ====
