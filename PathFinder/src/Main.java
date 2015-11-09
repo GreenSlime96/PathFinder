@@ -1,7 +1,9 @@
-package me.bpek.PathFinder;
+
 
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+
+import ui.Window;
 
 public class Main {
 	public static void main(String[] args) {   

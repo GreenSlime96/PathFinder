@@ -1,4 +1,4 @@
-package me.bpek.PathFinder;
+package core;
 
 import java.awt.Dimension;
 import java.awt.Point;

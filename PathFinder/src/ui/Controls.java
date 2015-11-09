@@ -1,4 +1,4 @@
-package me.bpek.PathFinder;
+package ui;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -16,6 +16,8 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
+
+import core.Model;
 
 public class Controls extends Box implements Observer, ActionListener {
 	

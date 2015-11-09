@@ -1,9 +1,11 @@
-package me.bpek.PathFinder;
+package ui;
 
 import java.awt.BorderLayout;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+
+import core.Model;
 
 public class Window extends JFrame {
 

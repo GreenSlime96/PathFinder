@@ -1,4 +1,4 @@
-package me.bpek.PathFinder;
+package ui;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -16,6 +16,8 @@ import java.util.Observer;
 import java.util.Stack;
 
 import javax.swing.JComponent;
+
+import core.Model;
 
 public class View extends JComponent implements Observer {
 

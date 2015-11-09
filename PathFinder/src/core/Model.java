@@ -1,4 +1,4 @@
-package me.bpek.PathFinder;
+package core;
 
 import java.awt.Dimension;
 import java.awt.Point;
@@ -20,7 +20,6 @@ public class Model extends Observable implements ActionListener {
 	// ==== Properties ====
 	
 	private Dimension dimension;
-	private State state;
 	
 	private final Timer timer = new Timer(50, this);
 	private final Vector<Thread> threads = new Vector<Thread>();
@@ -254,11 +253,6 @@ public class Model extends Observable implements ActionListener {
 				
 				for (Node n : nodes) {
 					opened.add(n.getState().getStart());
-				}
-				
-				try {
-					Thread.sleep(5);
-				} catch (InterruptedException e) {
 				}
 			}
 		}
