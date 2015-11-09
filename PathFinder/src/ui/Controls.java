@@ -125,7 +125,6 @@ public class Controls extends Box implements Observer, ActionListener {
 	
 	@Override
 	public void update(Observable o, Object arg) {
-		
 		if (o == model) {
 			
 		}
