@@ -10,11 +10,11 @@ public class State {
 	
 	private final Dimension dimension;
 	
-	private final Point start;
-	private final Point goal;
-	
 	private final Set<Point> walls;	
 	
+	private final Point start;
+	private final Point goal;
+		
 	// ==== Constructor ====
 	
 	public State(Dimension dimension, Point start, Point goal, Set<Point> walls) {
@@ -23,27 +23,30 @@ public class State {
 		this.goal = goal;
 		this.walls = walls;
 
-		if (!isValidPoint(start))
-			throw new IllegalArgumentException(start + " not in " + dimension);
+		if (!isWalkable(start))
+			throw new IllegalArgumentException(start + " is not walkable");
 		
-		if (!isValidPoint(goal))
-			throw new IllegalArgumentException(goal + " not in " + dimension);
+		if (!isWalkable(goal))
+			throw new IllegalArgumentException(goal + " is not walkable");
 		
 		for (Point p : walls)
-			if (!isValidPoint(p))
+			if (!isInside(p))
 				throw new IllegalArgumentException(p + " not in " + dimension);
 	}
 	
 	
-	// ==== Private Helper Methods ====
+	// ==== Public Helper Methods ====
 	
-	private boolean isValidPoint(Point point) {
-//		return !(point.getX() < 0 ||
-//				point.getX() >= dimension.getWidth() ||
-//				point.getY() < 0 ||
-//				point.getY() >= dimension.getHeight());
-		
-		// one less operator
+	public boolean isWalkable(int x, int y) {
+		Point point = new Point(x, y);
+		return isWalkable(point);
+	}
+	
+	public boolean isWalkable(Point point) {
+		return isInside(point) && !(walls.contains(point));
+	}
+	
+	public boolean isInside(Point point) {
 		return (point.getX() >= 0 && 
 				point.getX() < dimension.getWidth() &&
 				point.getY() >= 0 &&

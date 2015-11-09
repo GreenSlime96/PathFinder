@@ -6,6 +6,8 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
@@ -16,6 +18,7 @@ import java.util.Observer;
 import java.util.Stack;
 
 import javax.swing.JComponent;
+import javax.swing.Timer;
 
 import core.Model;
 
@@ -43,41 +46,43 @@ public class View extends JComponent implements Observer {
 	// ==== Constructor ====
 	
 	public View(Model model) {
-		this.model = model;
+		super();
 		
+		setPreferredSize(new Dimension(800, 600));
+		setVisible(false);
+		
+		this.model = model;		
 		model.addObserver(this);
-		
-		setMinimumSize(new Dimension(13 * PIXEL_WIDTH, 5 * PIXEL_WIDTH));
-		setPreferredSize(new Dimension(30 * PIXEL_WIDTH, 20 * PIXEL_WIDTH));
 		
 		// resizing
 		addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentResized(ComponentEvent e) {				
+				resizeModelToView();
+			}
+
+			@Override
+			public void componentShown(ComponentEvent e) {
+				final Timer timer = new Timer(100, new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						resizeModelToView();
+						model.fit();
+					}
+				});
+				
+				timer.setRepeats(false);
+				timer.start();
+			}
+			
+			// ==== Private Helper Methods ====
+			
+			private void resizeModelToView() {
 				final int sizeX = getSize().width / PIXEL_WIDTH + 1;
 				final int sizeY = getSize().height / PIXEL_WIDTH + 1;
 				
 				model.setSize(new Dimension(sizeX, sizeY));
-				
-//				timer.restart();
 			}
-
-//			@Override
-//			public void componentShown(ComponentEvent e) {
-//				final Timer timer = new Timer(200, new ActionListener() {
-//					@Override
-//					public void actionPerformed(ActionEvent e) {
-//						final int sizeX = getSize().width / PIXEL_WIDTH;
-//						final int sizeY = getSize().height / PIXEL_WIDTH;
-//						
-//						model.setSize(new Dimension(sizeX, sizeY));
-////						model.fit();
-//					}
-//				});
-//				
-//				timer.setRepeats(false);
-//				timer.start();
-//			}
 		});
 		
 		MouseAdapter mouseAdapter = new MouseAdapter() {
@@ -144,13 +149,17 @@ public class View extends JComponent implements Observer {
 		g.setColor(Color.WHITE);		
 		g.fillRect(0, 0, dimension.width * PIXEL_WIDTH, dimension.height * PIXEL_WIDTH);
 		
-		g.setColor(COLOUR_NODE);
-		for (Point opened : model.getClosed())
-			g.fillRect(opened.x * PIXEL_WIDTH, opened.y * PIXEL_WIDTH, PIXEL_WIDTH, PIXEL_WIDTH);
+		synchronized (model.getClosed()) {
+			g.setColor(COLOUR_NODE);
+			for (Point opened : model.getClosed())
+				g.fillRect(opened.x * PIXEL_WIDTH, opened.y * PIXEL_WIDTH, PIXEL_WIDTH, PIXEL_WIDTH);
+		}
 		
-		g.setColor(COLOUR_FRINGE);
-		for (Point opened : model.getOpened())
-			g.fillRect(opened.x * PIXEL_WIDTH, opened.y * PIXEL_WIDTH, PIXEL_WIDTH, PIXEL_WIDTH);
+		synchronized (model.getOpened()) {
+			g.setColor(COLOUR_FRINGE);
+			for (Point opened : model.getOpened())
+				g.fillRect(opened.x * PIXEL_WIDTH, opened.y * PIXEL_WIDTH, PIXEL_WIDTH, PIXEL_WIDTH);
+		}
 		
 		g.setColor(COLOUR_START);
 		g.fillRect(start.x * PIXEL_WIDTH, start.y * PIXEL_WIDTH, PIXEL_WIDTH, PIXEL_WIDTH);

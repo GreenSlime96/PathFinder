@@ -29,5 +29,7 @@ public class Window extends JFrame {
 		setContentPane(panel);
 		
 		pack();
+		
+		view.setVisible(true);
 	}
 }
