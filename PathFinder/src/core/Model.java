@@ -26,10 +26,10 @@ public class Model extends Observable implements ActionListener {
 	private final Stack<Point> solution = new Stack<Point>();
 	private final Search search = new Search(opened, closed, solution);
 
-	private boolean active;
-	private int diagonalMovement;
-	private int searchAlgorithm;
-	private int searchHeuristic;
+	private boolean active = true;
+	private int diagonalMovement = DiagonalMovement.ALWAYS;
+	private int searchAlgorithm = Algorithm.A_STAR;
+	private int searchHeuristic = Heuristic.MANHATTAN_DISTANCE;
 	
 	private Point start;
 	private Point goal;

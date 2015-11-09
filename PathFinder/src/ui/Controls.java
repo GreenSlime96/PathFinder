@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Observable;
@@ -83,6 +82,7 @@ public class Controls extends Box implements Observer, ActionListener {
 		diagonalComboBox.addActionListener(this);
 		startButton.addActionListener(this);
 		clearButton.addActionListener(this);
+		pauseButton.addActionListener(this);
 		
 //		
 //		add(buttonsPanel);
