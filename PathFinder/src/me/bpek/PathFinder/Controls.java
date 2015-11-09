@@ -51,6 +51,7 @@ public class Controls extends Box implements Observer, ActionListener {
 		buttonsPanel.add(clearButton);
 		
 		startButton.addActionListener(this);
+		clearButton.addActionListener(this);
 		
 		add(buttonsPanel);
 	}
@@ -68,7 +69,12 @@ public class Controls extends Box implements Observer, ActionListener {
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
+		
+		if (e.getSource() == startButton) {
+			model.startSearch();
+		} else if (e.getSource() == clearButton) {
+			model.clearWalls();
+		}
 		
 	}
 

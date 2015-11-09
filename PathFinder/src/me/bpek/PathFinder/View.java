@@ -1,15 +1,19 @@
 package me.bpek.PathFinder;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Line2D;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Stack;
 
 import javax.swing.JComponent;
 
@@ -138,6 +142,14 @@ public class View extends JComponent implements Observer {
 		g.setColor(Color.WHITE);		
 		g.fillRect(0, 0, dimension.width * PIXEL_WIDTH, dimension.height * PIXEL_WIDTH);
 		
+		g.setColor(COLOUR_NODE);
+		for (Point opened : model.getClosed())
+			g.fillRect(opened.x * PIXEL_WIDTH, opened.y * PIXEL_WIDTH, PIXEL_WIDTH, PIXEL_WIDTH);
+		
+		g.setColor(COLOUR_FRINGE);
+		for (Point opened : model.getOpened())
+			g.fillRect(opened.x * PIXEL_WIDTH, opened.y * PIXEL_WIDTH, PIXEL_WIDTH, PIXEL_WIDTH);
+		
 		g.setColor(COLOUR_START);
 		g.fillRect(start.x * PIXEL_WIDTH, start.y * PIXEL_WIDTH, PIXEL_WIDTH, PIXEL_WIDTH);
 		
@@ -147,15 +159,6 @@ public class View extends JComponent implements Observer {
 		g.setColor(COLOUR_WALL);
 		for (Point wall : model.getWalls())
 			g.fillRect(wall.x * PIXEL_WIDTH, wall.y * PIXEL_WIDTH, PIXEL_WIDTH, PIXEL_WIDTH);
-		
-		g.setColor(COLOUR_NODE);
-		for (Point opened : model.getClosed())
-			g.fillRect(opened.x * PIXEL_WIDTH, opened.y * PIXEL_WIDTH, PIXEL_WIDTH, PIXEL_WIDTH);
-		
-		g.setColor(COLOUR_FRINGE);
-		for (Point opened : model.getOpened())
-			g.fillRect(opened.x * PIXEL_WIDTH, opened.y * PIXEL_WIDTH, PIXEL_WIDTH, PIXEL_WIDTH);
-			
 
 		g.setColor(COLOUR_BORDER);
 		for (int y = 0; y < dimension.height; y++) {
@@ -166,6 +169,20 @@ public class View extends JComponent implements Observer {
 
 				g.drawRect(xPos, yPos, PIXEL_WIDTH, PIXEL_WIDTH);
 			}
+		}
+		
+		Graphics2D g2 = (Graphics2D) g;
+		g2.setStroke(new BasicStroke(3));
+		
+		g.setColor(Color.YELLOW);
+		
+		Stack<Point> solution = model.getSolution();
+		for (int i = 0; i < solution.size() - 1; i++) {
+			Point p1 = solution.get(i);
+			Point p2 = solution.get(i + 1);
+			
+			g2.draw(new Line2D.Float(p1.x * PIXEL_WIDTH + PIXEL_WIDTH / 2, p1.y * PIXEL_WIDTH + PIXEL_WIDTH / 2,
+					p2.x * PIXEL_WIDTH + PIXEL_WIDTH / 2, p2.y * PIXEL_WIDTH + PIXEL_WIDTH / 2));
 		}
 	}
 

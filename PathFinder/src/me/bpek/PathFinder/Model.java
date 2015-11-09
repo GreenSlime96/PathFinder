@@ -22,7 +22,7 @@ public class Model extends Observable implements ActionListener {
 	private Dimension dimension;
 	private State state;
 	
-	private final Timer timer = new Timer(1000, this);
+	private final Timer timer = new Timer(50, this);
 	private final Vector<Thread> threads = new Vector<Thread>();
 	private final Set<Point> opened = new HashSet<Point>();
 	private final Set<Point> closed = new HashSet<Point>();
@@ -108,12 +108,34 @@ public class Model extends Observable implements ActionListener {
 		walls.remove(point);
 	}
 	
+	public void clearWalls() {
+		stopSearching();
+		
+		opened.clear();
+		closed.clear();
+		solution.clear();
+		
+		walls.clear();
+		
+		setChanged();
+		notifyObservers();
+	}
+	
 	public Set<Point> getOpened() {
 		return opened;
 	}
 	
 	public Set<Point> getClosed() {
 		return closed;
+	}
+	
+	public void startSearch() {
+		stopSearching();
+		startSearching();
+	}
+	
+	public Stack<Point> getSolution() {
+		return solution;
 	}
 	
 	// ==== ActionListener Implementation ====
@@ -180,6 +202,10 @@ public class Model extends Observable implements ActionListener {
 		if (active) {
 			timer.start();
 			
+			opened.clear();
+			closed.clear();
+			solution.clear();
+			
 			// TODO: implement multithreading
 			Thread thread = new Thread(new Search());
 			thread.start();
@@ -207,11 +233,6 @@ public class Model extends Observable implements ActionListener {
 				Node node = queue.poll();
 				State state = node.getState();
 				
-				opened.remove(state.getStart());
-				closed.add(state.getStart());
-				
-				counter ++;
-				
 				if (state.getStart().equals(state.getGoal())) {
 					System.out.println("Search complete in : " + (System.currentTimeMillis() - startTime) + "ms\tNodes processed: " + counter + "\tMemory: " + queue.size());
 
@@ -223,11 +244,21 @@ public class Model extends Observable implements ActionListener {
 					return;
 				}
 				
+				opened.remove(state.getStart());
+				closed.add(state.getStart());
+				
+				counter ++;
+				
 				List<Node> nodes = expand(node);				
 				queue.addAll(nodes);
 				
 				for (Node n : nodes) {
 					opened.add(n.getState().getStart());
+				}
+				
+				try {
+					Thread.sleep(5);
+				} catch (InterruptedException e) {
 				}
 			}
 		}
@@ -260,13 +291,17 @@ public class Model extends Observable implements ActionListener {
 					break;
 				}
 				
+				if (closed.contains(newPoint))
+					continue;
+								
 				if (isValidPoint(newPoint) || newPoint.equals(state.getGoal())) {
 					newState = new State(dimension, newPoint, goal, walls);
 					
 					list.add(new Node(node, newState, depth + 1, depth + manhattanDistance(newState)));
-
-				}					
+				}		
 			}
+			
+			return list;
 		}
 		
 		private int manhattanDistance(State state) {
