@@ -59,6 +59,13 @@ public class BreadthFirst {
 				opened.add(p);
 				queue.add(n);
 			}
+			
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 		System.out.println("no solution found!");

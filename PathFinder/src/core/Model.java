@@ -252,6 +252,7 @@ public class Model extends Observable implements ActionListener {
 			
 			search.setDiagonalMovement(diagonalMovement);
 			search.setSearchAlgorithm(searchAlgorithm);
+			search.setSearchHeuristic(searchHeuristic);
 			search.setStartState(startState);
 			
 			search.start();

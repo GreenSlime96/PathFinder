@@ -110,7 +110,7 @@ public class Search {
 		
 		switch (searchAlgorithm) {
 		case Algorithm.A_STAR:
-			search = AStar::search;
+			search = Algorithm::AStar;
 			break;
 		case Algorithm.BREADTH_FIRST:
 			search = BreadthFirst::search;

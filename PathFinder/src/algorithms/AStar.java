@@ -1,18 +1,19 @@
 package algorithms;
 
 import java.awt.Point;
+import java.util.Collection;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import core.Node;
 import core.State;
 
 public class AStar {
 	
-	// TODO: the whole thing is incomplete! :(
 	public static final void search(Search search, Function<State, Double> heuristic) {
 		State startState = search.getStartState();
 
@@ -22,7 +23,7 @@ public class AStar {
 
 		PriorityQueue<Node> queue = new PriorityQueue<Node>();
 		queue.add(new Node(null, startState, 0, 0));
-
+		
 		long startTime = System.nanoTime();
 		int nodesProcessed = 0;
 		int counter = 0;
@@ -54,15 +55,19 @@ public class AStar {
 
 			for (Node n : nodes) {
 				Point p = n.getState().getStart();
-				
-//				if (n.getHeuristic() != node.getDepth() + heuristic.apply(n.getState()))
-//					System.err.println("we have problem");
 
 				if (closed.contains(p) || opened.contains(p))
 					continue;
 
 				opened.add(p);
 				queue.add(n);
+			}
+			
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 

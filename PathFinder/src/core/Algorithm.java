@@ -1,11 +1,17 @@
 package core;
 
 import java.awt.Point;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import algorithms.Search;
 
@@ -23,21 +29,48 @@ public class Algorithm {
 	// ==== Static Methods ====
 	
 	public static final void AStar(Search search, Function<State, Double> heuristic) {
-		State startState = search.getStartState();
+		Collection<Node> struct = new PriorityQueue<Node>();
+		Predicate<Point> predicate = ((p) -> (search.getClosed().contains(p) || search.getOpened().contains(p)));
+		
+		Option option = new Option(search, predicate, struct, heuristic);
+		search(option);
+	}
+	
+	public final void BreadthFirst(Search search) {
+		Collection<Node> struct = new LinkedList<Node>();
+		Predicate<Point> predicate = ((p) -> (search.getClosed().contains(p) || search.getOpened().contains(p)));
+	}
+	
+	public final void DepthFirst(Search search) {
+		Collection<Node> struct = new Stack<Node>();
+		Predicate<Point> predicate = ((p) -> (search.getClosed().contains(p)));
+	}
+	
+	public static final void search(Option option) {	
+		final Function<State, Double> heuristic = option.heuristic;
+		
+		final Supplier<Node> getter = option.getter;
+		final Consumer<Node> setter = option.setter;
+		
+		final Predicate<Point> predicate = option.predicate;
+		final Collection<Node> struct = option.struct;
+		
+		final State startState = option.startState;
 
-		Stack<Point> solution = search.getSolution();
-		Set<Point> opened = search.getOpened();
-		Set<Point> closed = search.getClosed();
-
-		PriorityQueue<Node> queue = new PriorityQueue<Node>();
-		queue.add(new Node(null, startState, 0, 0));
+		final Stack<Point> solution = option.solution;
+		final Set<Point> opened = option.opened;
+		final Set<Point> closed = option.closed;
+		
+		final int diagonalMovement = option.diagonalMovement;
+		
+		setter.accept(new Node(null, startState, 0, 0));
 
 		long startTime = System.nanoTime();
 		int nodesProcessed = 0;
 		int counter = 0;
 
-		while (!queue.isEmpty()) {
-			Node node = queue.poll();
+		while (!struct.isEmpty()) {
+			Node node = getter.get();
 			State state = node.getState();
 			Point point = state.getStart();
 
@@ -49,7 +82,7 @@ public class Algorithm {
 			if (point.equals(state.getGoal())) {
 				System.out.print("Search complete in : " + (System.nanoTime() - startTime) / 1000000f + "ms");
 				System.out.print("\t");
-				System.out.println("Nodes processed: " + nodesProcessed + "\tMemory: " + queue.size() + "\t" + counter);
+				System.out.println("Nodes processed: " + nodesProcessed + "\tMemory: " + struct.size() + "\t" + counter);
 
 				while (node != null) {
 					solution.push(node.getState().getStart());
@@ -58,21 +91,82 @@ public class Algorithm {
 
 				return;
 			}
+			
+			if (state.getWalls() != startState.getWalls())
+				System.out.println(":(");
 
-			List<Point> points = search.expand(state);
-
+			// TODO: state.expand(point, diagonalMovement)
+			List<Point> points = state.expand(diagonalMovement);
+			
 			for (Point p : points) {
-				if (closed.contains(p) || opened.contains(p))
+				if (predicate.test(p))
 					continue;
 				
-//				// TODO: convert to Functional Programming!
-//				Node n = new Node(node, )
+				// TODO: convert to Functional Programming!
+				State s = new State(state.getDimension(), p, state.getGoal(), state.getWalls());
+				Node n = new Node(node, s, node.getDepth() + 1, node.getDepth() + heuristic.apply(s));
 
 				opened.add(p);
-//				queue.add(n);
+				setter.accept(n);
 			}
 		}
 
 		System.out.println("no solution found!");
+	}
+	
+	static class Option {
+		// determined by the Search implementation
+		final Function<State, Double> heuristic;
+		
+		// definitely provided
+		final Predicate<Point> predicate;
+		final Collection<Node> struct;
+		
+		// passed on by the Model
+		final Search search;
+		
+		// determined by the Option class
+		final Supplier<Node> getter;
+		final Consumer<Node> setter;
+		
+		// other miscellaneous things
+		final Stack<Point> solution;
+		final Set<Point> opened;
+		final Set<Point> closed; 
+		
+		final State startState;
+		
+		final int diagonalMovement;
+		
+		// TODO: implement proper heuristics grabbing
+		public Option(Search search, Predicate<Point> predicate, Collection<Node> struct) {
+			this(search, predicate, struct, Heuristic::manhattanDistance);
+		}
+		
+		public Option(Search search, Predicate<Point> predicate, Collection<Node> struct, Function<State, Double> heuristic) {
+			this.heuristic = heuristic;
+			this.predicate = predicate;
+			this.struct = struct;
+			this.search = search;
+			
+			diagonalMovement = search.getDiagonalMovement();
+			
+			startState = search.getStartState();
+
+			solution = search.getSolution();
+			opened = search.getOpened();
+			closed = search.getClosed();
+			
+			if (struct instanceof Queue) {
+				getter = ((Queue<Node>) struct)::poll;
+				setter = ((Node x) -> ((Queue<Node>) struct).offer(x));
+			} else if (struct instanceof Stack) {
+				getter = ((Stack<Node>) struct)::pop;
+				setter = ((Node x) -> ((Stack<Node>) struct).push(x));
+			} else {
+				throw new IllegalArgumentException(struct + " is not an accepted type");
+			}
+		}
+		
 	}
 }

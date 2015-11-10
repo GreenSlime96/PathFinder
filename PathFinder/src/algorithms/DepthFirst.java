@@ -27,13 +27,14 @@ public class DepthFirst {
 		while (!stack.isEmpty()) {
 			Node node = stack.pop();
 			State state = node.getState();
+			Point point = state.getStart();
 			
 			opened.remove(state.getStart());
 			closed.add(state.getStart());
 						
 			nodesProcessed++;
 			
-			if (state.getStart().equals(state.getGoal())) {
+			if (point.equals(state.getGoal())) {
 				System.out.print("Search complete in : " + (System.nanoTime() - startTime) / 1000000f + "ms");
 				System.out.print("\t");
 				System.out.println("Nodes processed: " + nodesProcessed + "\tMemory: " + stack.size());
@@ -55,7 +56,7 @@ public class DepthFirst {
 					continue;
 				
 				opened.add(p);
-				stack.add(n);
+				stack.push(n);
 			}
 		}
 		
