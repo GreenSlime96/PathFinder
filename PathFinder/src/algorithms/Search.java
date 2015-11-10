@@ -69,9 +69,6 @@ public class Search {
 	}
 
 	public void setDiagonalMovement(int diagonalMovement) {
-		if (diagonalMovement < 1 || diagonalMovement > 4)
-			return;
-
 		this.diagonalMovement = diagonalMovement;
 	}
 
@@ -113,10 +110,10 @@ public class Search {
 			search = Algorithm::AStar;
 			break;
 		case Algorithm.BREADTH_FIRST:
-			search = BreadthFirst::search;
+			search = Algorithm::BreadthFirst;
 			break;
 		case Algorithm.DEPTH_FIRST:
-			search = DepthFirst::search;
+			search = Algorithm::DepthFirst;
 			break;
 		case Algorithm.BEST_FIRST:
 			search = BestFirst::search;

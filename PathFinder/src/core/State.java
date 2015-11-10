@@ -152,7 +152,7 @@ public class State {
 		if (d3 && isWalkable(point.x - 1, point.y + 1))
 			points.add(new Point(point.x - 1, point.y + 1));
 
-		Collections.shuffle(points);
+//		Collections.shuffle(points);
 		return points;
 	}
 }

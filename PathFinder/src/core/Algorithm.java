@@ -1,6 +1,7 @@
 package core;
 
 import java.awt.Point;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,17 +37,23 @@ public class Algorithm {
 		search(option);
 	}
 	
-	public final void BreadthFirst(Search search) {
+	public static final void BreadthFirst(Search search, Function<State, Double> heuristic) {
 		Collection<Node> struct = new LinkedList<Node>();
 		Predicate<Point> predicate = ((p) -> (search.getClosed().contains(p) || search.getOpened().contains(p)));
+		
+		Option option = new Option(search, predicate, struct, (state) -> 0d);
+		search(option);
 	}
 	
-	public final void DepthFirst(Search search) {
+	public static final void DepthFirst(Search search, Function<State, Double> heuristic) {
 		Collection<Node> struct = new Stack<Node>();
 		Predicate<Point> predicate = ((p) -> (search.getClosed().contains(p)));
+		
+		Option option = new Option(search, predicate, struct, (state) -> 0d);
+		search(option);
 	}
 	
-	public static final void search(Option option) {	
+	private static final void search(Option option) {	
 		final Function<State, Double> heuristic = option.heuristic;
 		
 		final Supplier<Node> getter = option.getter;
@@ -60,14 +67,13 @@ public class Algorithm {
 		final Stack<Point> solution = option.solution;
 		final Set<Point> opened = option.opened;
 		final Set<Point> closed = option.closed;
-		
+				
 		final int diagonalMovement = option.diagonalMovement;
 		
 		setter.accept(new Node(null, startState, 0, 0));
 
 		long startTime = System.nanoTime();
 		int nodesProcessed = 0;
-		int counter = 0;
 
 		while (!struct.isEmpty()) {
 			Node node = getter.get();
@@ -82,18 +88,18 @@ public class Algorithm {
 			if (point.equals(state.getGoal())) {
 				System.out.print("Search complete in : " + (System.nanoTime() - startTime) / 1000000f + "ms");
 				System.out.print("\t");
-				System.out.println("Nodes processed: " + nodesProcessed + "\tMemory: " + struct.size() + "\t" + counter);
+				System.out.println("Nodes processed: " + nodesProcessed + "\tMemory: " + struct.size());
 
 				while (node != null) {
 					solution.push(node.getState().getStart());
 					node = node.getParent();
 				}
-
+				
+				option.closed.addAll(closed);
+				option.opened.addAll(opened);
+				
 				return;
 			}
-			
-			if (state.getWalls() != startState.getWalls())
-				System.out.println(":(");
 
 			// TODO: state.expand(point, diagonalMovement)
 			List<Point> points = state.expand(diagonalMovement);
@@ -106,7 +112,7 @@ public class Algorithm {
 				State s = new State(state.getDimension(), p, state.getGoal(), state.getWalls());
 				Node n = new Node(node, s, node.getDepth() + 1, node.getDepth() + heuristic.apply(s));
 
-				opened.add(p);
+				opened.add(p);				
 				setter.accept(n);
 			}
 		}

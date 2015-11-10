@@ -37,6 +37,8 @@ public class Controls extends Box implements Observer, ActionListener {
 	private final JButton startButton = new JButton("Start Search");
 	private final JButton pauseButton = new JButton("Pause Search");
 	private final JButton clearButton = new JButton("Clear Walls");
+	private final JButton fitButton = new JButton("Reset Grid");
+	private final JButton mazeButton = new JButton("Create Maze");
 	
 	// ==== Constructor ====
 	
@@ -62,12 +64,16 @@ public class Controls extends Box implements Observer, ActionListener {
 		
 		heuristicComboBox.addItem("Manhattan Distance");
 		heuristicComboBox.addItem("Euclidean Distance");
+		heuristicComboBox.addItem("Octile Distance");
+		heuristicComboBox.addItem("Chebyshev Distance");
 		
 		addSetting(algorithmComboBox, "Algorithm", "The type of search algorithm to use");
 		addSetting(heuristicComboBox, "Heuristic", "The type of heuristic to use");
 		addSetting(diagonalComboBox, "Diagonals", "Whether or not diagonal searching is allowed");
 		addSetting(startButton, "Start Search", "Starts the search");
 		addSetting(clearButton, "Clear Walls", "Removes the walls");
+		addSetting(fitButton, "Reset Gird", "Resets the Grid to the new window");
+		addSetting(mazeButton, "Generate Maze", "Generates a maze in the grid");
 		
 		// vertical spacing
 		add(new JPanel(new GridBagLayout()));
@@ -78,6 +84,8 @@ public class Controls extends Box implements Observer, ActionListener {
 		startButton.addActionListener(this);
 		clearButton.addActionListener(this);
 		pauseButton.addActionListener(this);
+		fitButton.addActionListener(this);
+		mazeButton.addActionListener(this);
 	}
 	
 	// ==== Private Helper Methods ====
@@ -139,8 +147,12 @@ public class Controls extends Box implements Observer, ActionListener {
 			model.setSearchHeuristic(heuristicComboBox.getSelectedIndex());
 		} else if (source == startButton) {
 			model.startSearch();
-		} else if (e.getSource() == clearButton) {
+		} else if (source == clearButton) {
 			model.clearWalls();
+		} else if (source == fitButton) {
+			model.fit();
+		} else if (source == mazeButton) {
+			model.generateMaze();
 		}
 		
 	}

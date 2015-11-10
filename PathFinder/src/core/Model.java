@@ -4,8 +4,10 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Observable;
 import java.util.Set;
 import java.util.Stack;
@@ -192,6 +194,71 @@ public class Model extends Observable implements ActionListener {
 	
 	public synchronized final Stack<Point> getSolution() {
 		return solution;
+	}
+	
+	// TODO: polish
+	public synchronized final void generateMaze() {
+		walls.clear();
+		
+		for (int x = 0; x < dimension.width; x++) {
+			for (int y = 0; y < dimension.height; y++) {
+				Point point = new Point(x, y);
+				
+				if (isUnoccupied(point))
+					walls.add(point);
+			}
+		}
+		
+		Stack<Point> stack = new Stack<Point>();
+		Set<Point> visited = new HashSet<Point>();
+		
+		stack.push(start);
+		
+		while (!stack.isEmpty()) {
+			Point exit = stack.pop();
+			walls.remove(exit);
+			visited.add(exit);
+
+			List<Point> points = new ArrayList<Point>(4);
+			
+			for (int i = 0; i < 4; i++) {
+				Point newPoint = new Point(exit);
+				
+				switch(i) {
+				case 0:
+					newPoint.translate(0, -2);
+					break;
+				case 1:
+					newPoint.translate(2, 0);
+					break;
+				case 2:
+					newPoint.translate(0, 2);
+					break;
+				case 3:
+					newPoint.translate(-2, 0);
+					break;
+				}
+				
+				if (!isInside(newPoint))
+					continue;
+				
+				points.add(newPoint);
+			}
+						
+			Collections.shuffle(points);
+			
+			for (Point p : points) {
+				if (!visited.contains(p)) {
+					// removing the wall between exit and wall
+					walls.remove(new Point((p.x + exit.x) / 2, (p.y + exit.y) / 2));
+					visited.add(p);
+					stack.push(p);
+				}
+			}
+		}
+		
+		setChanged();
+		notifyObservers();
 	}
 	
 	// ==== ActionListener Implementation ====
