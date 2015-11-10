@@ -63,7 +63,7 @@ public class View extends JComponent implements Observer {
 
 			@Override
 			public void componentShown(ComponentEvent e) {
-				final Timer timer = new Timer(100, new ActionListener() {
+				final Timer timer = new Timer(50, new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						resizeModelToView();

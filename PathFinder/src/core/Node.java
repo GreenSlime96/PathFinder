@@ -4,12 +4,12 @@ package core;
 // ==== Node Implementation ====
 
 public class Node implements Comparable<Node> {
-	private Node parent;
-	private State state;
+	private final Node parent;
+	private final State state;
 	
-	private int depth;
+	private final int depth;
 	
-	private double heuristic;
+	private final double heuristic;
 
 	public Node(Node parent, State state, int depth, double heuristic) {
 		this.parent = parent;

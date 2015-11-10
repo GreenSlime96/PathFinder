@@ -34,9 +34,9 @@ public class Controls extends Box implements Observer, ActionListener {
 	private final JComboBox<String> algorithmComboBox = new JComboBox<String>();
 	private final JComboBox<String> diagonalComboBox = new JComboBox<String>();
 	private final JComboBox<String> heuristicComboBox = new JComboBox<String>();
-	private final JButton startButton = new JButton("<html><center>Start<br/>Search<center></html>");
-	private final JButton pauseButton = new JButton("<html><center>Pause<br/>Search<center></html>");
-	private final JButton clearButton = new JButton("<html><center>Clear<br/>Walls<center></html>");
+	private final JButton startButton = new JButton("Start Search");
+	private final JButton pauseButton = new JButton("Pause Search");
+	private final JButton clearButton = new JButton("Clear Walls");
 	
 	// ==== Constructor ====
 	
@@ -72,20 +72,12 @@ public class Controls extends Box implements Observer, ActionListener {
 		// vertical spacing
 		add(new JPanel(new GridBagLayout()));
 		
-//		JPanel buttonsPanel = new JPanel(new GridLayout(1, 3));
-//		buttonsPanel.add(startButton);
-//		buttonsPanel.add(pauseButton);
-//		buttonsPanel.add(clearButton);
-//		
 		algorithmComboBox.addActionListener(this);
 		heuristicComboBox.addActionListener(this);
 		diagonalComboBox.addActionListener(this);
 		startButton.addActionListener(this);
 		clearButton.addActionListener(this);
 		pauseButton.addActionListener(this);
-		
-//		
-//		add(buttonsPanel);
 	}
 	
 	// ==== Private Helper Methods ====
@@ -126,9 +118,10 @@ public class Controls extends Box implements Observer, ActionListener {
 	@Override
 	public void update(Observable o, Object arg) {
 		if (o == model) {
-			
-		}
-		
+			algorithmComboBox.setSelectedIndex(model.getSearchAlgorithm());
+			diagonalComboBox.setSelectedIndex(model.getDiagonalMovement());
+			heuristicComboBox.setSelectedIndex(model.getSearchHeuristic());
+		}		
 	}
 	
 	
@@ -141,7 +134,7 @@ public class Controls extends Box implements Observer, ActionListener {
 		if (source == algorithmComboBox) {
 			model.setSearchAlgorithm(algorithmComboBox.getSelectedIndex());
 		} else if (source == diagonalComboBox) {
-			model.setDiagonalMovement(diagonalComboBox.getSelectedIndex() + 1);
+			model.setDiagonalMovement(diagonalComboBox.getSelectedIndex());
 		} else if (source == heuristicComboBox) {
 			model.setSearchHeuristic(heuristicComboBox.getSelectedIndex());
 		} else if (source == startButton) {

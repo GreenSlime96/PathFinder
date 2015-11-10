@@ -147,7 +147,7 @@ public class Search {
 
 		for (Point point : points) {
 			State state = new State(dimension, point, goal, walls);
-			nodes.add(new Node(node, state, depth, depth + heuristic(state)));
+			nodes.add(new Node(node, state, depth + 1, depth + heuristic(state)));
 		}
 		
 		return nodes;

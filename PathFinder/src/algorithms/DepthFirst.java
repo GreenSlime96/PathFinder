@@ -20,15 +20,20 @@ public class DepthFirst {
 		Stack<Node> stack = new Stack<Node>();
 		stack.add(new Node(null, startState, 0, 0));
 		
-		long startTime = System.currentTimeMillis();
+		long startTime = System.nanoTime();
 		int nodesProcessed = 0;
 	
 		while (!stack.isEmpty()) {
 			Node node = stack.pop();
 			State state = node.getState();
 			
+			opened.remove(state.getStart());
+			closed.add(state.getStart());
+						
+			nodesProcessed++;
+			
 			if (state.getStart().equals(state.getGoal())) {
-				System.out.print("Search complete in : " + (System.currentTimeMillis() - startTime) + "ms");
+				System.out.print("Search complete in : " + (System.nanoTime() - startTime) / 1000000f + "ms");
 				System.out.print("\t");
 				System.out.println("Nodes processed: " + nodesProcessed + "\tMemory: " + stack.size());
 
@@ -39,19 +44,16 @@ public class DepthFirst {
 				
 				return;
 			}
-			
-			opened.remove(state.getStart());
-			closed.add(state.getStart());
 						
-			nodesProcessed++;
-			
 			List<Node> nodes = search.expand(node);
 			
 			for (Node n : nodes) {
-				if (closed.contains(n.getState().getStart()))
+				Point p = n.getState().getStart();
+
+				if (closed.contains(p))
 					continue;
 				
-				opened.add(n.getState().getStart());
+				opened.add(p);
 				stack.add(n);
 			}
 		}
