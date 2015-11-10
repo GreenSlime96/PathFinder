@@ -6,13 +6,14 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
+import java.util.function.Function;
 
 import core.Node;
 import core.State;
 
 public class BreadthFirst {
 
-	public static final void search(Search search) {
+	public static final void search(Search search, Function<State, Double> heuristic) {
 		State startState = search.getStartState();
 
 		Stack<Point> solution = search.getSolution();

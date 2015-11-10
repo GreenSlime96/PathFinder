@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
+import java.util.function.Function;
 
 import core.DiagonalMovement;
 import core.Heuristic;
@@ -26,6 +27,8 @@ public class Search {
 	private int diagonalMovement;
 	private int searchHeuristic;
 	private int searchAlgorithm;
+	
+	private Function<State, Double> heuristic = Heuristic::manhattanDistance;
 	
 	// ==== Constructor ====
 	
@@ -109,10 +112,10 @@ public class Search {
 			public void run() {
 				switch (searchAlgorithm) {
 				case 0:
-					AStar.search(search);
+					AStar.search(search, heuristic);
 					break;
 				case 1:
-					BreadthFirst.search(search);
+					BreadthFirst.search(search, heuristic);
 					break;
 				case 2:
 					DepthFirst.search(search);

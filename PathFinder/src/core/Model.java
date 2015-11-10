@@ -62,9 +62,8 @@ public class Model extends Observable implements ActionListener {
 		if (!dimension.equals(this.dimension)) {
 			this.dimension = dimension;
 			
-			for (Point p : walls)
-				if (!isInside(p))
-					walls.remove(p);
+			// this is fucking useful!
+			walls.removeIf(p -> !isInside(p));
 			
 			// TODO: implement point repositioning
 			

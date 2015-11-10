@@ -1,23 +1,20 @@
 package algorithms;
 
 import java.awt.Point;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.Stack;
+import java.util.function.Function;
 
 import core.Node;
 import core.State;
 
 public class AStar {
-
+	
 	// TODO: the whole thing is incomplete! :(
-	public static final void search(Search search) {
+	public static final void search(Search search, Function<State, Double> heuristic) {
 		State startState = search.getStartState();
-		
-		Map<Point, Double> testMap = new HashMap<Point, Double>();
 
 		Stack<Point> solution = search.getSolution();
 		Set<Point> opened = search.getOpened();
@@ -54,41 +51,18 @@ public class AStar {
 			}
 
 			List<Node> nodes = search.expand(node);
-			
+
 			for (Node n : nodes) {
 				Point p = n.getState().getStart();
+				
+//				if (n.getHeuristic() != node.getDepth() + heuristic.apply(n.getState()))
+//					System.err.println("we have problem");
 
-				if (closed.contains(p))
+				if (closed.contains(p) || opened.contains(p))
 					continue;
-				
-	            // get the distance between current node and the neighbor
-	            // and calculate the next g score
-	            double ng = node.getDepth() + ((p.x - point.x == 0 || p.y - point.y == 0) ? 1 : Math.sqrt(2));
 
-				if (!opened.contains(p) || ng < n.getDepth()) {
-
-					if (!opened.contains(p)) {
-						testMap.put(p, n.getHeuristic());
-						opened.add(p);
-						queue.add(n);
-					} else {
-						System.out.println("we here bro");
-					}
-
-
-				}
-				
-				if (n.getHeuristic() < testMap.get(p)) {
-					System.out.println("hmmm");
-					testMap.put(p, n.getHeuristic());
-				}
-			}
-			
-			try {
-				Thread.sleep(1);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				opened.add(p);
+				queue.add(n);
 			}
 		}
 
