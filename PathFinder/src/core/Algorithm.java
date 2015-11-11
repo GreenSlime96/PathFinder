@@ -52,7 +52,13 @@ public class Algorithm {
 		search(option);
 	}
 	
-	private static final void search(Option option) {	
+	// ==== Private Helper Methods ====
+	
+	private static final void search(Option option) {
+		
+		// TODO: this looks UGLY here, could we perhaps move this elsewhere?
+		// ==== Properties ====
+		
 		final Function<State, Double> heuristic = option.heuristic;
 		
 		final Supplier<Node> getter = option.getter;
@@ -68,6 +74,8 @@ public class Algorithm {
 		final Set<Point> closed = option.closed;
 				
 		final int diagonalMovement = option.diagonalMovement;
+		
+		// ==== The Algorithm! ====
 		
 		setter.accept(new Node(null, startState, 0, 0));
 
