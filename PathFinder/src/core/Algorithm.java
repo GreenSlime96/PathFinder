@@ -118,16 +118,8 @@ public class Algorithm {
 				if (predicate.test(p))
 					continue;
 				
-				// THE FOLLOWING ONLY APPLIES TO A_STAR
-				// TODO: fuck this shit will deal tomorrow
-				
-				int dx = Math.abs(p.x - goal.x);
-				int dy = Math.abs(p.y - goal.y);
-				
-				// TODO: move Heuristic.SQRT_2 elsewhere -_-
-				double ng = node.g + ((p.x - point.x == 0 || p.y - point.y == 0) ? 1 : Heuristic.SQRT_2);
-				
-				// END
+				final int dx = Math.abs(p.x - goal.x);
+				final int dy = Math.abs(p.y - goal.y);
 				
 				Node n = new Node(node, p, node.getDepth() + 1, node.getDepth() + heuristic.apply(dx, dy));
 

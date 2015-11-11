@@ -64,7 +64,6 @@ public class AStar {
 				System.out.println("Distance:\t" + distance);
 				System.out.println("-----");
 
-
 				return;
 			}
 
@@ -81,8 +80,7 @@ public class AStar {
 				if (!opened.containsKey(p)) {
 					g = Double.MAX_VALUE;
 				} else {
-					Node test = opened.get(p);
-					g = test.g;
+					g = opened.get(p).g;
 				}
 
 				if (!opened.containsKey(p) || ng < g) {
