@@ -8,8 +8,8 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -28,7 +28,7 @@ public class Algorithm {
 	
 	// ==== Static Methods ====
 	
-	public static final void AStar(Search search, Function<State, Double> heuristic) {
+	public static final void AStar(Search search, BiFunction<Integer, Integer, Double> heuristic) {
 		Collection<Node> struct = new PriorityQueue<Node>();
 		Predicate<Point> predicate = ((p) -> (search.getClosed().contains(p) || search.getOpened().contains(p)));
 		
@@ -36,30 +36,30 @@ public class Algorithm {
 		search(option);
 	}
 	
-	public static final void BreadthFirst(Search search, Function<State, Double> heuristic) {
+	public static final void BreadthFirst(Search search, BiFunction<Integer, Integer, Double> heuristic) {
 		Collection<Node> struct = new LinkedList<Node>();
 		Predicate<Point> predicate = ((p) -> (search.getClosed().contains(p) || search.getOpened().contains(p)));
 		
-		Option option = new Option(search, predicate, struct, (state) -> 0d);
+		Option option = new Option(search, predicate, struct, (dx, dy) -> 0d);
 		search(option);
 	}
 	
-	public static final void DepthFirst(Search search, Function<State, Double> heuristic) {
+	public static final void DepthFirst(Search search, BiFunction<Integer, Integer, Double> heuristic) {
 		Collection<Node> struct = new Stack<Node>();
 		Predicate<Point> predicate = ((p) -> (search.getClosed().contains(p)));
 		
-		Option option = new Option(search, predicate, struct, (state) -> 0d);
+		Option option = new Option(search, predicate, struct, (dx, dy) -> 0d);
 		search(option);
 	}
 	
 	// ==== Private Helper Methods ====
 	
-	private static final void search(Option option) {
+	private static final void search(final Option option) {
 		
 		// TODO: this looks UGLY here, could we perhaps move this elsewhere?
 		// ==== Properties ====
 		
-		final Function<State, Double> heuristic = option.heuristic;
+		final BiFunction<Integer, Integer, Double> heuristic = option.heuristic;
 		
 		final Supplier<Node> getter = option.getter;
 		final Consumer<Node> setter = option.setter;
@@ -67,7 +67,9 @@ public class Algorithm {
 		final Predicate<Point> predicate = option.predicate;
 		final Collection<Node> struct = option.struct;
 		
-		final State startState = option.startState;
+		final State grid = option.startState;
+		final Point start = grid.getStart();
+		final Point goal = grid.getGoal();
 
 		final Stack<Point> solution = option.solution;
 		final Set<Point> opened = option.opened;
@@ -77,43 +79,43 @@ public class Algorithm {
 		
 		// ==== The Algorithm! ====
 		
-		setter.accept(new Node(null, startState, 0, 0));
+		setter.accept(new Node(null, start, 0, 0));
 
 		long startTime = System.nanoTime();
 		int nodesProcessed = 0;
 
 		while (!struct.isEmpty()) {
 			Node node = getter.get();
-			State state = node.getState();
-			Point point = state.getStart();
+			Point point = node.getState();
 
 			opened.remove(point);
 			closed.add(point);
 
 			nodesProcessed++;
 
-			if (point.equals(state.getGoal())) {
+			if (point.equals(goal)) {
 				System.out.print("Search complete in : " + (System.nanoTime() - startTime) / 1000000f + "ms");
 				System.out.print("\t");
 				System.out.println("Nodes processed: " + nodesProcessed + "\tMemory: " + struct.size());
 
 				while (node != null) {
-					solution.push(node.getState().getStart());
+					solution.push(node.getState());
 					node = node.getParent();
 				}
 				
 				return;
 			}
 
-			List<Point> points = state.expand(diagonalMovement);
+			List<Point> points = grid.expand(point, diagonalMovement);
 			
 			for (Point p : points) {
 				if (predicate.test(p))
 					continue;
 				
-				// TODO: convert to Functional Programming!
-				State s = new State(state.getDimension(), p, state.getGoal(), state.getWalls());
-				Node n = new Node(node, s, node.getDepth() + 1, node.getDepth() + heuristic.apply(s));
+				int dx = Math.abs(p.x - goal.x);
+				int dy = Math.abs(p.y - goal.y);
+				
+				Node n = new Node(node, p, node.getDepth() + 1, node.getDepth() + heuristic.apply(dx, dy));
 
 				opened.add(p);				
 				setter.accept(n);
@@ -125,7 +127,7 @@ public class Algorithm {
 	
 	static class Option {
 		// determined by the Search implementation
-		final Function<State, Double> heuristic;
+		final BiFunction<Integer, Integer, Double> heuristic;
 		
 		// definitely provided
 		final Predicate<Point> predicate;
@@ -152,7 +154,7 @@ public class Algorithm {
 			this(search, predicate, struct, Heuristic::manhattanDistance);
 		}
 		
-		public Option(Search search, Predicate<Point> predicate, Collection<Node> struct, Function<State, Double> heuristic) {
+		public Option(Search search, Predicate<Point> predicate, Collection<Node> struct, BiFunction<Integer, Integer, Double> heuristic) {
 			this.heuristic = heuristic;
 			this.predicate = predicate;
 			this.struct = struct;

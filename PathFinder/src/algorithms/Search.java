@@ -4,6 +4,7 @@ import java.awt.Point;
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import core.Algorithm;
@@ -18,8 +19,8 @@ public class Search {
 	private final Set<Point> closed;
 	private final Stack<Point> solution;
 	
-	private BiConsumer<Search, Function<State, Double>> search;
-	private Function<State, Double> heuristic;
+	private BiConsumer<Search, BiFunction<Integer, Integer, Double>> search;
+	private BiFunction<Integer, Integer, Double> heuristic;
 	
 	private State startState;
 	private Thread thread;
@@ -110,13 +111,13 @@ public class Search {
 			search = Algorithm::DepthFirst;
 			break;
 		case Algorithm.BEST_FIRST:
-			search = BestFirst::search;
+			// TODO: implement
 			break;
 		case Algorithm.DIJKSTRA:
 			// TODO: implement
 			break;
 		default:
-			search = AStar::search;
+			search = Algorithm::AStar;
 			break;
 		}
 	}

@@ -1,17 +1,19 @@
 package core;
 
-// TODO: take this out of here!
+import java.awt.Point;
+
+// TODO: parameterize, later
 // ==== Node Implementation ====
 
 public class Node implements Comparable<Node> {
 	private final Node parent;
-	private final State state;
+	private final Point state;
 	
 	private final int depth;
 	
 	private final double heuristic;
 
-	public Node(Node parent, State state, int depth, double heuristic) {
+	public Node(Node parent, Point state, int depth, double heuristic) {
 		this.parent = parent;
 		this.state = state;
 		this.depth = depth;
@@ -24,7 +26,7 @@ public class Node implements Comparable<Node> {
 		return parent;
 	}
 
-	public State getState() {
+	public Point getState() {
 		return state;
 	}
 
@@ -64,7 +66,5 @@ public class Node implements Comparable<Node> {
 			return -1;
 		
 		return 0;
-		
-//		return this.heuristic - o.heuristic;
-	}			
+	}		
 }

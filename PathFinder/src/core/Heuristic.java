@@ -1,7 +1,5 @@
 package core;
 
-import java.awt.Point;
-
 public final class Heuristic {
 	
 	// ==== Constants ====
@@ -16,39 +14,20 @@ public final class Heuristic {
 	
 	// ==== Static Methods ====
 	
-	public static final double manhattanDistance(State state) {
-		final Point start = state.getStart();
-		final Point goal = state.getGoal();
-		
-		return Math.abs(start.x - goal.x) + Math.abs(start.y - goal.y);
+	public static final double manhattanDistance(int dx, int dy) {
+		return dx + dy;
 	}
 	
-	public static final double euclideanDistance(State state) {
-		final Point start = state.getStart();
-		final Point goal = state.getGoal();	
-		
-		return start.distance(goal);
+	public static final double euclideanDistance(int dx, int dy) {		
+		return Math.sqrt(dx * dx + dy * dy);
 	}
 	
-	public static final double octileDistance(State state) {
-		final double F = SQRT_2 - 1;
-		
-		final Point start = state.getStart();
-		final Point goal = state.getGoal();		
-
-		final int dx = Math.abs(start.x - goal.x);
-		final int dy = Math.abs(start.y - goal.y);
-		
+	public static final double octileDistance(int dx, int dy) {
+		final double F = SQRT_2 - 1;		
 		return (dx < dy) ? F * dx + dy : F * dy + dx; 
 	}
 	
-	public static final double chebyshevDistance(State state) {
-		final Point start = state.getStart();
-		final Point goal = state.getGoal();		
-
-		final int dx = Math.abs(start.x - goal.x);
-		final int dy = Math.abs(start.y - goal.y);
-		
+	public static final double chebyshevDistance(int dx, int dy) {		
 		return Math.max(dx, dy); 
 	}
 
