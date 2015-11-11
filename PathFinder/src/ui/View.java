@@ -106,6 +106,9 @@ public class View extends JComponent implements Observer {
 			}
 			
 			public void mouseReleased(MouseEvent e) {
+				if (e.getButton() == MouseEvent.BUTTON3)
+					System.out.println(convertPoint(e.getPoint()));
+				
 				state = 0;
 			}
 			

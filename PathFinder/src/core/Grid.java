@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class State {
+public class Grid {
 
 	// ==== Properties ====
 
@@ -19,7 +19,7 @@ public class State {
 
 	// ==== Constructor ====
 
-	public State(Dimension dimension, Point start, Point goal, Set<Point> walls) {
+	public Grid(Dimension dimension, Point start, Point goal, Set<Point> walls) {
 		this.dimension = dimension;
 		this.start = start;
 		this.goal = goal;

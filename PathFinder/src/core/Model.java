@@ -315,12 +315,12 @@ public class Model extends Observable implements ActionListener {
 			closed.clear();
 			solution.clear();
 			
-			State startState = new State(dimension, start, goal, walls);
+			Grid grid = new Grid(dimension, start, goal, walls);
 			
 			search.setDiagonalMovement(diagonalMovement);
 			search.setSearchAlgorithm(searchAlgorithm);
 			search.setSearchHeuristic(searchHeuristic);
-			search.setStartState(startState);
+			search.setStartState(grid);
 			
 			search.start();
 		}

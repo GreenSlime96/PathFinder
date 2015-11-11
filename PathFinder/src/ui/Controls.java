@@ -56,6 +56,8 @@ public class Controls extends Box implements Observer, ActionListener {
 		algorithmComboBox.addItem("A-Star");
 		algorithmComboBox.addItem("Breadth First");
 		algorithmComboBox.addItem("Depth First");
+		algorithmComboBox.addItem("Best First");
+		algorithmComboBox.addItem("Dijkstra");
 
 		diagonalComboBox.addItem("Always");
 		diagonalComboBox.addItem("Never");

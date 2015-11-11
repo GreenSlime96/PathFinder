@@ -9,9 +9,13 @@ public class Node implements Comparable<Node> {
 	private final Node parent;
 	private final Point state;
 	
-	private final int depth;
+	public final int depth;
 	
 	private final double heuristic;
+	
+	// shit this can be final -_-
+	// TODO: read above
+	public double f, g, h;
 
 	public Node(Node parent, Point state, int depth, double heuristic) {
 		this.parent = parent;
@@ -26,7 +30,7 @@ public class Node implements Comparable<Node> {
 		return parent;
 	}
 
-	public Point getState() {
+	public Point getData() {
 		return state;
 	}
 

@@ -67,7 +67,7 @@ public class Algorithm {
 		final Predicate<Point> predicate = option.predicate;
 		final Collection<Node> struct = option.struct;
 		
-		final State grid = option.startState;
+		final Grid grid = option.startState;
 		final Point start = grid.getStart();
 		final Point goal = grid.getGoal();
 
@@ -86,7 +86,7 @@ public class Algorithm {
 
 		while (!struct.isEmpty()) {
 			Node node = getter.get();
-			Point point = node.getState();
+			Point point = node.getData();
 
 			opened.remove(point);
 			closed.add(point);
@@ -98,10 +98,16 @@ public class Algorithm {
 				System.out.print("\t");
 				System.out.println("Nodes processed: " + nodesProcessed + "\tMemory: " + struct.size());
 
+				double distance = 0;
+				
 				while (node != null) {
-					solution.push(node.getState());
+					if (node.getParent() != null)
+						distance += node.getData().distance(node.getParent().getData());
+					solution.push(node.getData());
 					node = node.getParent();
 				}
+				
+				System.out.println(distance);
 				
 				return;
 			}
@@ -112,8 +118,16 @@ public class Algorithm {
 				if (predicate.test(p))
 					continue;
 				
+				// THE FOLLOWING ONLY APPLIES TO A_STAR
+				// TODO: fuck this shit will deal tomorrow
+				
 				int dx = Math.abs(p.x - goal.x);
 				int dy = Math.abs(p.y - goal.y);
+				
+				// TODO: move Heuristic.SQRT_2 elsewhere -_-
+				double ng = node.g + ((p.x - point.x == 0 || p.y - point.y == 0) ? 1 : Heuristic.SQRT_2);
+				
+				// END
 				
 				Node n = new Node(node, p, node.getDepth() + 1, node.getDepth() + heuristic.apply(dx, dy));
 
@@ -145,7 +159,7 @@ public class Algorithm {
 		final Set<Point> opened;
 		final Set<Point> closed; 
 		
-		final State startState;
+		final Grid startState;
 		
 		final int diagonalMovement;
 		

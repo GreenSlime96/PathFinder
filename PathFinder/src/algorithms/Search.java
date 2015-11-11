@@ -5,11 +5,10 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import core.Algorithm;
 import core.Heuristic;
-import core.State;
+import core.Grid;
 
 public class Search {
 
@@ -22,7 +21,7 @@ public class Search {
 	private BiConsumer<Search, BiFunction<Integer, Integer, Double>> search;
 	private BiFunction<Integer, Integer, Double> heuristic;
 	
-	private State startState;
+	private Grid startState;
 	private Thread thread;
 
 	private int diagonalMovement;
@@ -39,11 +38,11 @@ public class Search {
 
 	// ==== Accessors ====
 
-	public State getStartState() {
+	public Grid getStartState() {
 		return startState;
 	}
 
-	public void setStartState(State startState) {
+	public void setStartState(Grid startState) {
 		this.startState = startState;
 	}
 
@@ -82,6 +81,7 @@ public class Search {
 			heuristic = Heuristic::euclideanDistance;
 			break;
 		case Heuristic.OCTILE_DISTANCE:
+			System.out.println("here");
 			heuristic = Heuristic::octileDistance;
 			break;
 		case Heuristic.CHEBYSHEV_DISTANCE:
@@ -102,7 +102,7 @@ public class Search {
 		
 		switch (searchAlgorithm) {
 		case Algorithm.A_STAR:
-			search = Algorithm::AStar;
+			search = AStar::search;
 			break;
 		case Algorithm.BREADTH_FIRST:
 			search = Algorithm::BreadthFirst;
@@ -110,12 +110,12 @@ public class Search {
 		case Algorithm.DEPTH_FIRST:
 			search = Algorithm::DepthFirst;
 			break;
-		case Algorithm.BEST_FIRST:
-			// TODO: implement
-			break;
-		case Algorithm.DIJKSTRA:
-			// TODO: implement
-			break;
+//		case Algorithm.BEST_FIRST:
+//			// TODO: implement
+//			break;
+//		case Algorithm.DIJKSTRA:
+//			// TODO: implement
+//			break;
 		default:
 			search = Algorithm::AStar;
 			break;

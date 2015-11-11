@@ -23,7 +23,7 @@ public final class Heuristic {
 	}
 	
 	public static final double octileDistance(int dx, int dy) {
-		final double F = SQRT_2 - 1;		
+		final double F = SQRT_2 - 1;
 		return (dx < dy) ? F * dx + dy : F * dy + dx; 
 	}
 	
