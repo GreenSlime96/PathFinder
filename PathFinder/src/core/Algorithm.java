@@ -1,7 +1,6 @@
 package core;
 
 import java.awt.Point;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -95,13 +94,9 @@ public class Algorithm {
 					node = node.getParent();
 				}
 				
-				option.closed.addAll(closed);
-				option.opened.addAll(opened);
-				
 				return;
 			}
 
-			// TODO: state.expand(point, diagonalMovement)
 			List<Point> points = state.expand(diagonalMovement);
 			
 			for (Point p : points) {

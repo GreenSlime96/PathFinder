@@ -3,23 +3,22 @@ package core;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 public class State {
-	
+
 	// ==== Properties ====
-	
+
 	private final Dimension dimension;
-	
-	private final Set<Point> walls;	
-	
+
+	private final Set<Point> walls;
+
 	private final Point start;
 	private final Point goal;
-		
+
 	// ==== Constructor ====
-	
+
 	public State(Dimension dimension, Point start, Point goal, Set<Point> walls) {
 		this.dimension = dimension;
 		this.start = start;
@@ -28,59 +27,55 @@ public class State {
 
 		if (!isWalkable(start))
 			throw new IllegalArgumentException(start + " is not walkable");
-		
+
 		if (!isWalkable(goal))
 			throw new IllegalArgumentException(goal + " is not walkable");
-		
+
 		for (Point p : walls)
 			if (!isInside(p))
 				throw new IllegalArgumentException(p + " not in " + dimension);
 	}
-	
-	
+
 	// ==== Public Helper Methods ====
-	
+
 	public boolean isWalkable(int x, int y) {
-		Point point = new Point(x, y);
+		final Point point = new Point(x, y);
 		return isWalkable(point);
 	}
-	
+
 	public boolean isWalkable(Point point) {
 		return isInside(point) && !(walls.contains(point));
 	}
-	
+
 	public boolean isInside(Point point) {
-		return (point.getX() >= 0 && 
-				point.getX() < dimension.getWidth() &&
-				point.getY() >= 0 &&
-				point.getY() < dimension.getHeight());
+		return (point.getX() >= 0 && point.getX() < dimension.getWidth() && point.getY() >= 0
+				&& point.getY() < dimension.getHeight());
 	}
-	
-	
+
 	// ==== Accessors ====
-	
+
 	public Dimension getDimension() {
 		return dimension;
 	}
-	
+
 	public Point getStart() {
 		return start;
 	}
-	
+
 	public Point getGoal() {
 		return goal;
 	}
-	
+
 	public Set<Point> getWalls() {
 		return walls;
 	}
-	
+
 	// ==== Static Methods ====
-	
-	public final List<Point> expand(int diagonalMovement) {
+
+	public final List<Point> expand(final int diagonalMovement) {
 		return expand(start, diagonalMovement);
 	}
-	
+
 	public final List<Point> expand(final Point point, final int diagonalMovement) {
 		final List<Point> points = new ArrayList<Point>(8);
 
@@ -90,27 +85,30 @@ public class State {
 		s0 = s1 = s2 = s3 = false;
 		d0 = d1 = d2 = d3 = false;
 
+		final int x = point.x;
+		final int y = point.y;
+
 		// ↑
-		if (isWalkable(point.x, point.y - 1)) {
-			points.add(new Point(point.x, point.y - 1));
+		if (isWalkable(x, y - 1)) {
+			points.add(new Point(x, y - 1));
 			s0 = true;
 		}
 
 		// →
-		if (isWalkable(point.x + 1, point.y)) {
-			points.add(new Point(point.x + 1, point.y));
+		if (isWalkable(x + 1, y)) {
+			points.add(new Point(x + 1, y));
 			s1 = true;
 		}
 
 		// ↓
-		if (isWalkable(point.x, point.y + 1)) {
-			points.add(new Point(point.x, point.y + 1));
+		if (isWalkable(x, y + 1)) {
+			points.add(new Point(x, y + 1));
 			s2 = true;
 		}
 
 		// ←
-		if (isWalkable(point.x - 1, point.y)) {
-			points.add(new Point(point.x - 1, point.y));
+		if (isWalkable(x - 1, y)) {
+			points.add(new Point(x - 1, y));
 			s3 = true;
 		}
 
@@ -137,22 +135,23 @@ public class State {
 		}
 
 		// ↖
-		if (d0 && isWalkable(point.x - 1, point.y - 1))
-			points.add(new Point(point.x - 1, point.y - 1));
+		if (d0 && isWalkable(x - 1, y - 1))
+			points.add(new Point(x - 1, y - 1));
 
 		// ↗
-		if (d1 && isWalkable(point.x + 1, point.y - 1))
-			points.add(new Point(point.x + 1, point.y - 1));
+		if (d1 && isWalkable(x + 1, y - 1))
+			points.add(new Point(x + 1, y - 1));
 
 		// ↘
-		if (d2 && isWalkable(point.x + 1, point.y + 1))
-			points.add(new Point(point.x + 1, point.y + 1));
+		if (d2 && isWalkable(x + 1, y + 1))
+			points.add(new Point(x + 1, y + 1));
 
 		// ↙
-		if (d3 && isWalkable(point.x - 1, point.y + 1))
-			points.add(new Point(point.x - 1, point.y + 1));
+		if (d3 && isWalkable(x - 1, y + 1))
+			points.add(new Point(x - 1, y + 1));
 
-//		Collections.shuffle(points);
+		// TODO: shuffle or not to shuffle?
+		// Collections.shuffle(points);
 		return points;
 	}
 }

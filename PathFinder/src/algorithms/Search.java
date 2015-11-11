@@ -1,19 +1,13 @@
 package algorithms;
 
-import java.awt.Dimension;
 import java.awt.Point;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import core.Algorithm;
-import core.DiagonalMovement;
 import core.Heuristic;
-import core.Node;
 import core.State;
 
 public class Search {
@@ -157,118 +151,4 @@ public class Search {
 
 		thread.start();
 	}
-
-	public final List<Node> expand(Node node) {
-		final List<Point> points = expand(node.getState());
-		final List<Node> nodes = new ArrayList<Node>(points.size());
-
-		final Dimension dimension = startState.getDimension();
-		final Set<Point> walls = startState.getWalls();
-		final Point goal = startState.getGoal();
-
-		final int depth = node.getDepth();
-
-		for (Point point : points) {
-			State state = new State(dimension, point, goal, walls);
-			nodes.add(new Node(node, state, depth + 1, depth + heuristic.apply(state)));
-		}
-
-		return nodes;
-	}
-	
-	// TODO: this will be the new expand()
-	public final List<State> _expand(State state) {
-		final List<Point> points = expand(state);
-		final List<State> states = new ArrayList<State>(points.size());
-		
-		final Dimension dimension = startState.getDimension();
-		final Set<Point> walls = startState.getWalls();
-		final Point goal = startState.getGoal();
-		
-		for (Point point : points) 
-			states.add(new State(dimension, point, goal, walls));
-		
-//		// top one looks cleaner and more familiar
-//		// leaving this here for reference
-//		points.forEach((point) -> states.add(new State(dimension, point, goal, walls)));
-		
-		return states;
-	}
-
-	public final List<Point> expand(State state) {
-		final List<Point> points = new ArrayList<Point>(8);
-		final Point point = state.getStart();
-
-		boolean s0, s1, s2, s3;
-		boolean d0, d1, d2, d3;
-
-		s0 = s1 = s2 = s3 = false;
-		d0 = d1 = d2 = d3 = false;
-
-		// ↑
-		if (state.isWalkable(point.x, point.y - 1)) {
-			points.add(new Point(point.x, point.y - 1));
-			s0 = true;
-		}
-
-		// →
-		if (state.isWalkable(point.x + 1, point.y)) {
-			points.add(new Point(point.x + 1, point.y));
-			s1 = true;
-		}
-
-		// ↓
-		if (state.isWalkable(point.x, point.y + 1)) {
-			points.add(new Point(point.x, point.y + 1));
-			s2 = true;
-		}
-
-		// ←
-		if (state.isWalkable(point.x - 1, point.y)) {
-			points.add(new Point(point.x - 1, point.y));
-			s3 = true;
-		}
-
-		if (diagonalMovement == DiagonalMovement.NEVER)
-			return points;
-
-		if (diagonalMovement == DiagonalMovement.ONLY_WHEN_NO_OBSTACLES) {
-			d0 = s3 && s0;
-			d1 = s0 && s1;
-			d2 = s1 && s2;
-			d3 = s2 && s3;
-		} else if (diagonalMovement == DiagonalMovement.IF_AT_MOST_ONE_OBSTACLE) {
-			d0 = s3 || s0;
-			d1 = s0 || s1;
-			d2 = s1 || s2;
-			d3 = s2 || s3;
-		} else if (diagonalMovement == DiagonalMovement.ALWAYS) {
-			d0 = true;
-			d1 = true;
-			d2 = true;
-			d3 = true;
-		} else {
-			throw new IllegalArgumentException("incorrect diagonal parameter");
-		}
-
-		// ↖
-		if (d0 && state.isWalkable(point.x - 1, point.y - 1))
-			points.add(new Point(point.x - 1, point.y - 1));
-
-		// ↗
-		if (d1 && state.isWalkable(point.x + 1, point.y - 1))
-			points.add(new Point(point.x + 1, point.y - 1));
-
-		// ↘
-		if (d2 && state.isWalkable(point.x + 1, point.y + 1))
-			points.add(new Point(point.x + 1, point.y + 1));
-
-		// ↙
-		if (d3 && state.isWalkable(point.x - 1, point.y + 1))
-			points.add(new Point(point.x - 1, point.y + 1));
-
-		Collections.shuffle(points);
-		return points;
-	}
-
 }
