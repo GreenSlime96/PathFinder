@@ -24,7 +24,7 @@ public class AStar {
 
 		final Map<Point, Node> opened = new HashMap<Point, Node>();
 
-//		final Set<Point> opened = search.getOpened();
+		// final Set<Point> opened = search.getOpened();
 		final Set<Point> closed = search.getClosed();
 
 		final Point start = grid.getStart();
@@ -58,7 +58,7 @@ public class AStar {
 					search.getSolution().push(node.getData());
 					node = node.getParent();
 				}
-				
+
 				search.getOpened().addAll(opened.keySet());
 
 				System.out.println("Distance:\t" + distance);
@@ -94,7 +94,7 @@ public class AStar {
 					n.g = g;
 					n.h = h;
 
-					if (opened.containsKey(p)) 
+					if (opened.containsKey(p))
 						queue.remove(n);
 
 					opened.put(p, n);
@@ -103,8 +103,14 @@ public class AStar {
 					nodesProcessed++;
 				}
 			}
+
+			try {
+				Thread.sleep(1);
+			} catch (InterruptedException e) {
+				break;
+			}
 		}
-		
+
 		System.out.println("no solution found!");
 	}
 }

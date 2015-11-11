@@ -94,20 +94,21 @@ public class Algorithm {
 			nodesProcessed++;
 
 			if (point.equals(goal)) {
-				System.out.print("Search complete in : " + (System.nanoTime() - startTime) / 1000000f + "ms");
-				System.out.print("\t");
-				System.out.println("Nodes processed: " + nodesProcessed + "\tMemory: " + struct.size());
+				System.out.println("Time:\t\t" + (System.nanoTime() - startTime) / 1000000f + "ms");
+				System.out.println("Operations:\t" + nodesProcessed);
+				System.out.println("Memory:\t\t" + struct.size());
 
 				double distance = 0;
-				
+
 				while (node != null) {
 					if (node.getParent() != null)
 						distance += node.getData().distance(node.getParent().getData());
 					solution.push(node.getData());
 					node = node.getParent();
 				}
-				
-				System.out.println(distance);
+
+				System.out.println("Distance:\t" + distance);
+				System.out.println("-----");
 				
 				return;
 			}
@@ -125,6 +126,12 @@ public class Algorithm {
 
 				opened.add(p);				
 				setter.accept(n);
+			}
+			
+			try {
+				Thread.sleep(1);
+			} catch (InterruptedException e) {
+				break;
 			}
 		}
 

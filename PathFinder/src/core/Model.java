@@ -7,10 +7,13 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Observable;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeSet;
+
 import javax.swing.Timer;
 
 import algorithms.Search;
@@ -23,8 +26,8 @@ public class Model extends Observable implements ActionListener {
 	
 	private final Timer timer = new Timer(50, this);
 	
-	private final Set<Point> opened = Collections.synchronizedSet(new HashSet<Point>());
-	private final Set<Point> closed = Collections.synchronizedSet(new HashSet<Point>());
+	private final Set<Point> opened = Collections.synchronizedSet(new LinkedHashSet<Point>());
+	private final Set<Point> closed = Collections.synchronizedSet(new LinkedHashSet<Point>());
 	private final Stack<Point> solution = new Stack<Point>();
 	private final Search search = new Search(opened, closed, solution);
 

@@ -6,8 +6,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
@@ -18,8 +16,6 @@ import java.util.Observer;
 import java.util.Stack;
 
 import javax.swing.JComponent;
-import javax.swing.Timer;
-
 import core.Model;
 
 public class View extends JComponent implements Observer {
@@ -36,6 +32,7 @@ public class View extends JComponent implements Observer {
 	public static final Color COLOUR_START = new Color(0x00dd00);
 	public static final Color COLOUR_GOAL = new Color(0xee4400);
 	public static final Color COLOUR_WALL = new Color(0x808080);
+	public static final Color COLOUR_LINE = Color.YELLOW;
 	
 	
 	// ==== Properties ====
@@ -63,23 +60,15 @@ public class View extends JComponent implements Observer {
 
 			@Override
 			public void componentShown(ComponentEvent e) {
-				final Timer timer = new Timer(50, new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						resizeModelToView();
-						model.fit();
-					}
-				});
-				
-				timer.setRepeats(false);
-				timer.start();
+				resizeModelToView();
+				model.fit();
 			}
 			
 			// ==== Private Helper Methods ====
 			
 			private void resizeModelToView() {
-				final int sizeX = getSize().width / PIXEL_WIDTH + 1;
-				final int sizeY = getSize().height / PIXEL_WIDTH + 1;
+				final int sizeX = getSize().width / PIXEL_WIDTH;
+				final int sizeY = getSize().height / PIXEL_WIDTH;
 				
 				model.setSize(new Dimension(sizeX, sizeY));
 			}
@@ -141,6 +130,7 @@ public class View extends JComponent implements Observer {
 	
 	// ==== JComponent Override ====
 	
+	@SuppressWarnings("unused")
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
@@ -152,16 +142,29 @@ public class View extends JComponent implements Observer {
 		g.setColor(Color.WHITE);		
 		g.fillRect(0, 0, dimension.width * PIXEL_WIDTH, dimension.height * PIXEL_WIDTH);
 		
+		
 		synchronized (model.getClosed()) {
 			g.setColor(COLOUR_NODE);
-			for (Point opened : model.getClosed())
+			int i = 0;
+			
+			for (Point opened : model.getClosed()) {
+//				final float balance = (float) i / model.getClosed().size();
+//				g.setColor(Color.getHSBColor(balance * 2 / 3, 1, 1));
 				g.fillRect(opened.x * PIXEL_WIDTH, opened.y * PIXEL_WIDTH, PIXEL_WIDTH, PIXEL_WIDTH);
+				i++;
+			}
 		}
 		
 		synchronized (model.getOpened()) {
 			g.setColor(COLOUR_FRINGE);
-			for (Point opened : model.getOpened())
+			int i = 0;
+			
+			for (Point opened : model.getOpened()) {
+//				final float balance = (float) i / model.getOpened().size();
+//				g.setColor(Color.getHSBColor(2/3f, 1, balance));
 				g.fillRect(opened.x * PIXEL_WIDTH, opened.y * PIXEL_WIDTH, PIXEL_WIDTH, PIXEL_WIDTH);
+				i++;
+			}
 		}
 		
 		g.setColor(COLOUR_START);
@@ -174,21 +177,23 @@ public class View extends JComponent implements Observer {
 		for (Point wall : model.getWalls())
 			g.fillRect(wall.x * PIXEL_WIDTH, wall.y * PIXEL_WIDTH, PIXEL_WIDTH, PIXEL_WIDTH);
 
-		g.setColor(COLOUR_BORDER);
-		for (int y = 0; y < dimension.height; y++) {
-			final int yPos = y * PIXEL_WIDTH;
-
-			for (int x = 0; x < dimension.width; x++) {
-				final int xPos = x * PIXEL_WIDTH;
-
-				g.drawRect(xPos, yPos, PIXEL_WIDTH, PIXEL_WIDTH);
+		if (PIXEL_WIDTH >= 8) {
+			g.setColor(COLOUR_BORDER);
+			for (int y = 0; y < dimension.height; y++) {
+				final int yPos = y * PIXEL_WIDTH;
+	
+				for (int x = 0; x < dimension.width; x++) {
+					final int xPos = x * PIXEL_WIDTH;
+	
+					g.drawRect(xPos, yPos, PIXEL_WIDTH, PIXEL_WIDTH);
+				}
 			}
 		}
 		
 		Graphics2D g2 = (Graphics2D) g;
-		g2.setStroke(new BasicStroke(3));
+		g2.setStroke(new BasicStroke(Math.max(1, PIXEL_WIDTH / 10)));
 		
-		g.setColor(Color.YELLOW);
+		g.setColor(COLOUR_LINE);
 		
 		Stack<Point> solution = model.getSolution();
 		for (int i = 0; i < solution.size() - 1; i++) {
