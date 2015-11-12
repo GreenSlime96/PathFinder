@@ -2,44 +2,23 @@ package core;
 
 import java.awt.Point;
 
-// TODO: parameterize, later
 // ==== Node Implementation ====
 
+// TODO: do we need depth class?
+// TODO: can we make Node abstract?
+// TODO: does it need to implement Comparable?
+
 public class Node implements Comparable<Node> {
-	private final Node parent;
-	private final Point state;
-	
+	public final Node parent;
+	public final Point data;	
 	public final int depth;
 	
-	private final double heuristic;
-	
-	// shit this can be final -_-
-	// TODO: read above
 	public double f, g, h;
-
-	public Node(Node parent, Point state, int depth, double heuristic) {
+	
+	public Node(Node parent, Point data, int depth) {
 		this.parent = parent;
-		this.state = state;
+		this.data = data;
 		this.depth = depth;
-		this.heuristic = heuristic;
-	}
-
-	// ==== Accessors ====
-
-	public Node getParent() {
-		return parent;
-	}
-
-	public Point getData() {
-		return state;
-	}
-
-	public int getDepth() {
-		return depth;
-	}
-
-	public double getHeuristic() {
-		return heuristic;
 	}
 
 	// ==== Object Overrides ====
@@ -52,21 +31,21 @@ public class Node implements Comparable<Node> {
 		if (!(o instanceof Node))
 			return false;
 
-		return ((Node) o).state.equals(this.state);
+		return ((Node) o).data.equals(data);
 	}
 
 	@Override
 	public String toString() {
-		return this.state.toString();
+		return this.data.toString();
 	}
 
 	// ==== Comparable Implementation ====
 
 	@Override
 	public int compareTo(Node o) {
-		if (this.heuristic > o.heuristic)
+		if (this.f > o.f)
 			return 1;
-		else if (this.heuristic < o.heuristic)
+		else if (this.f < o.f)
 			return -1;
 		
 		return 0;

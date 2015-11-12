@@ -10,11 +10,14 @@ import java.util.function.BiFunction;
 import core.Node;
 import core.Grid;
 
-public class AStar {
+public class AStar extends GenericSearch {
 
 	// ==== Constants ====
 
 	public static final double SQRT_2 = Math.sqrt(2);
+	
+	
+	// ==== Public Static Methods ====
 
 	public static final void search(Search search, BiFunction<Integer, Integer, Double> heuristic) {
 		final Grid grid = search.getStartState();
@@ -31,14 +34,14 @@ public class AStar {
 		final Point goal = grid.getGoal();
 
 		long startTime = System.nanoTime();
-		int nodesProcessed = 0;
+		int nodesProcessed = 1;
 		int weight = 1;
 
-		queue.add(new Node(null, start, 0, 0));
+		queue.add(new Node(null, start, 0));
 
 		while (!queue.isEmpty()) {
 			Node node = queue.poll();
-			Point point = node.getData();
+			Point point = node.data;
 
 			nodesProcessed++;
 
@@ -53,10 +56,10 @@ public class AStar {
 				double distance = 0;
 
 				while (node != null) {
-					if (node.getParent() != null)
-						distance += node.getData().distance(node.getParent().getData());
-					search.getSolution().push(node.getData());
-					node = node.getParent();
+					if (node.parent != null)
+						distance += node.data.distance(node.parent.data);
+					search.getSolution().push(node.data);
+					node = node.parent;
 				}
 
 				search.getOpened().addAll(opened.keySet());
@@ -88,7 +91,7 @@ public class AStar {
 					h = weight * heuristic.apply(dx, dy);
 					f = g + h;
 
-					Node n = new Node(node, p, node.depth + 1, f);
+					Node n = new Node(node, p, node.depth + 1);
 
 					n.f = f;
 					n.g = g;

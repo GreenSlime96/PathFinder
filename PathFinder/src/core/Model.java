@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Set;
 import java.util.Stack;
-import java.util.TreeSet;
 
 import javax.swing.Timer;
 
@@ -36,9 +35,9 @@ public class Model extends Observable implements ActionListener {
 	private int searchAlgorithm = Algorithm.A_STAR;
 	private int searchHeuristic = Heuristic.MANHATTAN_DISTANCE;
 	
-	private Point start;
-	private Point goal;
-	private Set<Point> walls;	
+	private final Set<Point> walls = Collections.synchronizedSet(new HashSet<Point>());
+	private final Point start = new Point();
+	private final Point goal = new Point();
 	
 	// ==== Constructor ====
 	
@@ -71,6 +70,9 @@ public class Model extends Observable implements ActionListener {
 			walls.removeIf(p -> !isInside(p));
 			
 			// TODO: implement point repositioning
+			if (!isInside(start) || !isInside(goal)) {
+				fit();
+			}
 			
 			setChanged();
 			notifyObservers();
@@ -81,12 +83,9 @@ public class Model extends Observable implements ActionListener {
 		final int midX = (dimension.width - 1) / 2;
 		final int midY = (dimension.height - 1) / 2;
 		
-		start = new Point(midX - 5, midY);
-		goal = new Point(midX + 5, midY);
-		
-		if (walls == null)
-			walls = new HashSet<Point>();
-		
+		start.setLocation(midX - 5, midY);
+		goal.setLocation(midX + 5, midY);
+				
 		setChanged();
 		notifyObservers();
 	}
@@ -97,10 +96,10 @@ public class Model extends Observable implements ActionListener {
 	
 	// TODO: implement error checking
 	public synchronized final void setDiagonalMovement(int diagonalMovement) {
-		if (diagonalMovement != DiagonalMovement.ALWAYS 
-				&& diagonalMovement != DiagonalMovement.NEVER
-				&& diagonalMovement != DiagonalMovement.IF_AT_MOST_ONE_OBSTACLE
-				&& diagonalMovement != DiagonalMovement.ONLY_WHEN_NO_OBSTACLES) {
+		if (diagonalMovement != DiagonalMovement.ALWAYS && 
+			diagonalMovement != DiagonalMovement.NEVER &&
+			diagonalMovement != DiagonalMovement.IF_AT_MOST_ONE_OBSTACLE &&
+			diagonalMovement != DiagonalMovement.ONLY_WHEN_NO_OBSTACLES) {
 			throw new IllegalArgumentException("diagonalMovement not recognised");
 		}
 		
@@ -113,6 +112,14 @@ public class Model extends Observable implements ActionListener {
 	
 	// TODO: ref above
 	public synchronized final void setSearchAlgorithm(int searchAlgorithm) {
+		if (searchAlgorithm != Algorithm.A_STAR &&
+			searchAlgorithm != Algorithm.BEST_FIRST	&& 
+			searchAlgorithm != Algorithm.BREADTH_FIRST &&
+			searchAlgorithm != Algorithm.DEPTH_FIRST && 
+			searchAlgorithm != Algorithm.DIJKSTRA) {			
+			throw new IllegalArgumentException("searchAlgorithm not recognised");
+		}
+		
 		this.searchAlgorithm = searchAlgorithm;
 	}
 	
@@ -120,7 +127,6 @@ public class Model extends Observable implements ActionListener {
 		return searchHeuristic;
 	}
 	
-	// TODO: ref above
 	public synchronized final void setSearchHeuristic(int searchHeuristic) {
 		this.searchHeuristic = searchHeuristic;
 	}
@@ -139,7 +145,7 @@ public class Model extends Observable implements ActionListener {
 	
 	public synchronized final void setStart(Point start) {
 		if (isUnoccupied(start))
-			this.start = start;
+			this.start.setLocation(start);
 	}
 	
 	public synchronized final Point getGoal() {
@@ -148,7 +154,7 @@ public class Model extends Observable implements ActionListener {
 	
 	public synchronized final void setGoal(Point goal) {
 		if (isUnoccupied(goal))
-			this.goal = goal;
+			this.goal.setLocation(goal);
 	}
 	
 	public synchronized final Set<Point> getWalls() {
@@ -168,9 +174,7 @@ public class Model extends Observable implements ActionListener {
 	public synchronized final void clearWalls() {
 		stopSearching();
 		
-		opened.clear();
-		closed.clear();
-		solution.clear();
+		clearSearches();
 		
 		walls.clear();
 		
@@ -199,9 +203,12 @@ public class Model extends Observable implements ActionListener {
 		return solution;
 	}
 	
-	// TODO: polish
 	public synchronized final void generateMaze() {
-		walls.clear();
+		// move start and goals to opposite ends of the map
+		goal.setLocation(dimension.width - 2, dimension.height - 2);
+		start.setLocation(1, 1);
+		
+		clearWalls();
 		
 		for (int x = 0; x < dimension.width; x++) {
 			for (int y = 0; y < dimension.height; y++) {
@@ -217,8 +224,12 @@ public class Model extends Observable implements ActionListener {
 		
 		stack.push(start);
 		
+		new Thread(){
+			@Override
+			public void run() {
 		while (!stack.isEmpty()) {
 			Point exit = stack.pop();
+			
 			walls.remove(exit);
 			visited.add(exit);
 
@@ -252,16 +263,26 @@ public class Model extends Observable implements ActionListener {
 			
 			for (Point p : points) {
 				if (!visited.contains(p)) {
-					// removing the wall between exit and wall
 					walls.remove(new Point((p.x + exit.x) / 2, (p.y + exit.y) / 2));
 					visited.add(p);
 					stack.push(p);
 				}
 			}
+			
+			try {
+				Thread.sleep(20);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			setChanged();
+			notifyObservers();
 		}
+			}
+		}.start();
 		
-		setChanged();
-		notifyObservers();
+
 	}
 	
 	// ==== ActionListener Implementation ====
@@ -306,6 +327,12 @@ public class Model extends Observable implements ActionListener {
 		timer.stop();
 	}
 	
+	private void clearSearches() {
+		opened.clear();
+		closed.clear();
+		solution.clear();
+	}
+	
 	private void pauseSearching() {
 		
 	}
@@ -314,16 +341,14 @@ public class Model extends Observable implements ActionListener {
 		if (active) {
 			timer.start();
 			
-			opened.clear();
-			closed.clear();
-			solution.clear();
-			
 			Grid grid = new Grid(dimension, start, goal, walls);
 			
 			search.setDiagonalMovement(diagonalMovement);
 			search.setSearchAlgorithm(searchAlgorithm);
 			search.setSearchHeuristic(searchHeuristic);
 			search.setStartState(grid);
+			
+			clearSearches();
 			
 			search.start();
 		}

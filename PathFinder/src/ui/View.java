@@ -190,18 +190,20 @@ public class View extends JComponent implements Observer {
 			}
 		}
 		
+		// drawing the grid lines
+		
 		Graphics2D g2 = (Graphics2D) g;
 		g2.setStroke(new BasicStroke(Math.max(1, PIXEL_WIDTH / 10)));
 		
-		g.setColor(COLOUR_LINE);
+		g.setColor(COLOUR_LINE);		
 		
-		Stack<Point> solution = model.getSolution();
+		final Stack<Point> solution = model.getSolution();
 		for (int i = 0; i < solution.size() - 1; i++) {
-			Point p1 = solution.get(i);
-			Point p2 = solution.get(i + 1);
+			final Point p1 = solution.get(i);
+			final Point p2 = solution.get(i + 1);			
 			
-			g2.draw(new Line2D.Float(p1.x * PIXEL_WIDTH + PIXEL_WIDTH / 2, p1.y * PIXEL_WIDTH + PIXEL_WIDTH / 2,
-					p2.x * PIXEL_WIDTH + PIXEL_WIDTH / 2, p2.y * PIXEL_WIDTH + PIXEL_WIDTH / 2));
+			g2.draw(new Line2D.Float((p1.x + 0.5f) * PIXEL_WIDTH, (p1.y + 0.5f) * PIXEL_WIDTH,
+					(p2.x + 0.5f) * PIXEL_WIDTH, (p2.y + 0.5f) * PIXEL_WIDTH));
 		}
 	}
 

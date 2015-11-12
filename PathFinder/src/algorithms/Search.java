@@ -110,12 +110,12 @@ public class Search {
 		case Algorithm.DEPTH_FIRST:
 			search = Algorithm::DepthFirst;
 			break;
-//		case Algorithm.BEST_FIRST:
-//			// TODO: implement
-//			break;
-//		case Algorithm.DIJKSTRA:
-//			// TODO: implement
-//			break;
+		case Algorithm.BEST_FIRST:
+			search = BestFirst::search;
+			break;
+		case Algorithm.DIJKSTRA:
+			search = Dijkstra::search;
+			break;
 		default:
 			search = Algorithm::AStar;
 			break;

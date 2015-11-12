@@ -79,14 +79,14 @@ public class Algorithm {
 		
 		// ==== The Algorithm! ====
 		
-		setter.accept(new Node(null, start, 0, 0));
+		setter.accept(new Node(null, start, 0));
 
 		long startTime = System.nanoTime();
 		int nodesProcessed = 0;
 
 		while (!struct.isEmpty()) {
 			Node node = getter.get();
-			Point point = node.getData();
+			Point point = node.data;
 
 			opened.remove(point);
 			closed.add(point);
@@ -101,10 +101,10 @@ public class Algorithm {
 				double distance = 0;
 
 				while (node != null) {
-					if (node.getParent() != null)
-						distance += node.getData().distance(node.getParent().getData());
-					solution.push(node.getData());
-					node = node.getParent();
+					if (node.parent != null)
+						distance += node.data.distance(node.parent.data);
+					solution.push(node.data);
+					node = node.parent;
 				}
 
 				System.out.println("Distance:\t" + distance);
@@ -119,10 +119,7 @@ public class Algorithm {
 				if (predicate.test(p))
 					continue;
 				
-				final int dx = Math.abs(p.x - goal.x);
-				final int dy = Math.abs(p.y - goal.y);
-				
-				Node n = new Node(node, p, node.getDepth() + 1, node.getDepth() + heuristic.apply(dx, dy));
+				Node n = new Node(node, p, node.depth + 1);
 
 				opened.add(p);				
 				setter.accept(n);
