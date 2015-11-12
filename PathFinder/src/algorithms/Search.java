@@ -31,6 +31,10 @@ public class Search {
 	// ==== Constructor ====
 
 	public Search(Set<Point> opened, Set<Point> closed, Stack<Point> solution) {
+		GenericSearch.opened = opened;
+		GenericSearch.closed = closed;
+		GenericSearch.solution = solution;
+		
 		this.opened = opened;
 		this.closed = closed;
 		this.solution = solution;
@@ -44,6 +48,7 @@ public class Search {
 
 	public void setStartState(Grid startState) {
 		this.startState = startState;
+		GenericSearch.grid = startState;
 	}
 
 	public Set<Point> getOpened() {
@@ -64,6 +69,7 @@ public class Search {
 
 	public void setDiagonalMovement(int diagonalMovement) {
 		this.diagonalMovement = diagonalMovement;
+		GenericSearch.diagonalMovement = diagonalMovement;
 	}
 
 	public int getSearchHeuristic() {
@@ -105,7 +111,7 @@ public class Search {
 			search = AStar::search;
 			break;
 		case Algorithm.BREADTH_FIRST:
-			search = Algorithm::BreadthFirst;
+			search = BreadthFirst::search;
 			break;
 		case Algorithm.DEPTH_FIRST:
 			search = Algorithm::DepthFirst;
