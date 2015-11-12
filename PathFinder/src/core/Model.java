@@ -205,13 +205,30 @@ public class Model extends Observable implements ActionListener {
 	
 	public synchronized final void generateMaze() {
 		// move start and goals to opposite ends of the map
-		goal.setLocation(dimension.width - 2, dimension.height - 2);
+		
+		int x0, y0;
+		x0 = y0 = 2;
+		
+		if (dimension.height % 2 == 0)
+			y0 = 3;
+		
+		if (dimension.width % 2 == 0)
+			x0 = 3;
+			
+			
+		goal.setLocation(dimension.width - x0, dimension.height - y0);
 		start.setLocation(1, 1);
 		
 		clearWalls();
 		
 		for (int x = 0; x < dimension.width; x++) {
 			for (int y = 0; y < dimension.height; y++) {
+				if (dimension.height % 2 == 0 && y == dimension.height - 1)
+					continue;
+				
+				if (dimension.width % 2 == 0 && x == dimension.width - 1)
+					continue;
+					
 				Point point = new Point(x, y);
 				
 				if (isUnoccupied(point))
@@ -223,22 +240,19 @@ public class Model extends Observable implements ActionListener {
 		Set<Point> visited = new HashSet<Point>();
 		
 		stack.push(start);
-		
-		new Thread(){
-			@Override
-			public void run() {
+					
 		while (!stack.isEmpty()) {
 			Point exit = stack.pop();
-			
+
 			walls.remove(exit);
 			visited.add(exit);
 
 			List<Point> points = new ArrayList<Point>(4);
-			
+
 			for (int i = 0; i < 4; i++) {
 				Point newPoint = new Point(exit);
-				
-				switch(i) {
+
+				switch (i) {
 				case 0:
 					newPoint.translate(0, -2);
 					break;
@@ -252,37 +266,26 @@ public class Model extends Observable implements ActionListener {
 					newPoint.translate(-2, 0);
 					break;
 				}
-				
+
 				if (!isInside(newPoint))
 					continue;
-				
+
 				points.add(newPoint);
 			}
-						
+
 			Collections.shuffle(points);
-			
+
 			for (Point p : points) {
 				if (!visited.contains(p)) {
+					if (p.x == dimension.width - 1 || p.y == dimension.height - 1)
+						continue;
+					
 					walls.remove(new Point((p.x + exit.x) / 2, (p.y + exit.y) / 2));
 					visited.add(p);
 					stack.push(p);
 				}
 			}
-			
-			try {
-				Thread.sleep(20);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-			setChanged();
-			notifyObservers();
 		}
-			}
-		}.start();
-		
-
 	}
 	
 	// ==== ActionListener Implementation ====
@@ -293,7 +296,7 @@ public class Model extends Observable implements ActionListener {
 			setChanged();
 			notifyObservers();
 			
-			if (search.isActive())
+			if (search.isActive() || active)
 				return;
 			
 			timer.stop();

@@ -97,6 +97,8 @@ public class Search {
 			heuristic = Heuristic::manhattanDistance;
 			break;
 		}
+		
+		GenericSearch.heuristic = heuristic;
 	}
 
 	public int getSearchAlgorithm() {
@@ -114,7 +116,7 @@ public class Search {
 			search = BreadthFirst::search;
 			break;
 		case Algorithm.DEPTH_FIRST:
-			search = Algorithm::DepthFirst;
+			search = DepthFirst::search;
 			break;
 		case Algorithm.BEST_FIRST:
 			search = BestFirst::search;
@@ -123,7 +125,7 @@ public class Search {
 			search = Dijkstra::search;
 			break;
 		default:
-			search = Algorithm::AStar;
+			search = AStar::search;
 			break;
 		}
 	}

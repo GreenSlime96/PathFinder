@@ -10,12 +10,12 @@ public class Grid {
 
 	// ==== Properties ====
 
-	private final Dimension dimension;
+	public final Dimension dimension;
 
-	private final Set<Point> walls;
+	public final Set<Point> walls;
 
-	private final Point start;
-	private final Point goal;
+	public final Point start;
+	public final Point goal;
 
 	// ==== Constructor ====
 

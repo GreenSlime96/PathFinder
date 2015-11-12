@@ -24,7 +24,7 @@ public class View extends JComponent implements Observer {
 	
 	// ==== Constants ====
 	
-	public static final int PIXEL_WIDTH = 30;
+	public static final int PIXEL_WIDTH = 20;
 	
 	public static final Color COLOUR_BORDER = new Color(0, 0, 0, 51);	
 	public static final Color COLOUR_NODE = new Color(0xafeeee);
@@ -67,8 +67,8 @@ public class View extends JComponent implements Observer {
 			// ==== Private Helper Methods ====
 			
 			private void resizeModelToView() {
-				final int sizeX = getSize().width / PIXEL_WIDTH;
-				final int sizeY = getSize().height / PIXEL_WIDTH;
+				final int sizeX = getSize().width / PIXEL_WIDTH + 1;
+				final int sizeY = getSize().height / PIXEL_WIDTH + 1;
 				
 				model.setSize(new Dimension(sizeX, sizeY));
 			}
@@ -173,10 +173,12 @@ public class View extends JComponent implements Observer {
 		g.setColor(COLOUR_GOAL);
 		g.fillRect(goal.x * PIXEL_WIDTH, goal.y * PIXEL_WIDTH, PIXEL_WIDTH, PIXEL_WIDTH);
 		
-		g.setColor(COLOUR_WALL);
-		for (Point wall : model.getWalls())
-			g.fillRect(wall.x * PIXEL_WIDTH, wall.y * PIXEL_WIDTH, PIXEL_WIDTH, PIXEL_WIDTH);
-
+		synchronized (model.getWalls()) {
+			g.setColor(COLOUR_WALL);
+			for (Point wall : model.getWalls())
+				g.fillRect(wall.x * PIXEL_WIDTH, wall.y * PIXEL_WIDTH, PIXEL_WIDTH, PIXEL_WIDTH);
+		}
+		
 		if (PIXEL_WIDTH >= 8) {
 			g.setColor(COLOUR_BORDER);
 			for (int y = 0; y < dimension.height; y++) {
@@ -193,7 +195,7 @@ public class View extends JComponent implements Observer {
 		// drawing the grid lines
 		
 		Graphics2D g2 = (Graphics2D) g;
-		g2.setStroke(new BasicStroke(Math.max(1, PIXEL_WIDTH / 10)));
+		g2.setStroke(new BasicStroke(Math.max(3, PIXEL_WIDTH / 10)));
 		
 		g.setColor(COLOUR_LINE);		
 		

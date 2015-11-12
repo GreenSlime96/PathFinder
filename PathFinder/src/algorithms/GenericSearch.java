@@ -3,6 +3,7 @@ package algorithms;
 import java.awt.Point;
 import java.util.Set;
 import java.util.Stack;
+import java.util.function.BiFunction;
 
 import core.Grid;
 import core.Node;
@@ -11,6 +12,8 @@ public abstract class GenericSearch {
 	
 	// ==== Static Variables ====
 	
+	public static BiFunction<Integer, Integer, Double> heuristic;
+	
 	public static Set<Point> opened, closed;
 	public static Stack<Point> solution;
 	
@@ -18,8 +21,11 @@ public abstract class GenericSearch {
 	public static int nodesProcessed;
 	
 	public static long startTime;
+	public static long sleepTime = 1;
 	
 	public static Grid grid;
+	
+	public static int weight;
 	
 	// ==== Utility Methods ====
 	

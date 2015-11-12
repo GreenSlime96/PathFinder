@@ -10,15 +10,13 @@ import java.awt.Point;
 
 public class Node implements Comparable<Node> {
 	public final Node parent;
-	public final Point data;	
-	public final int depth;
+	public final Point data;
 	
 	public double f, g, h;
 	
-	public Node(Node parent, Point data, int depth) {
+	public Node(Point data, Node parent) {
 		this.parent = parent;
 		this.data = data;
-		this.depth = depth;
 	}
 
 	// ==== Object Overrides ====

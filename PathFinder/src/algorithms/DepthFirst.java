@@ -1,43 +1,45 @@
 package algorithms;
 
 import java.awt.Point;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.Stack;
 import java.util.function.BiFunction;
 
 import core.Node;
 
-public class BreadthFirst extends GenericSearch {
-	
+public class DepthFirst extends GenericSearch {
+
 	// ==== Search Method ====
-	
+
 	public static final void search(Search search, BiFunction<Integer, Integer, Double> heuristic) {
-		final Queue<Node> queue = new LinkedList<Node>();
-		queue.add(new Node( grid.getStart(), null));
-		
+		final Stack<Node> stack = new Stack<Node>();
+		stack.push(new Node(grid.getStart(), null));
+
 		startTime = System.nanoTime();
 		nodesProcessed = 0;
 
-		while (!queue.isEmpty()) {
-			Node node = queue.poll();
+		while (!stack.isEmpty()) {
+			Node node = stack.pop();
 			Point point = node.data;
 
 			nodesProcessed++;
-			
-			opened.remove(point);
-			closed.add(point);
-			
+
 			if (point.equals(grid.getGoal())) {
-				backtrace(node);				
+				backtrace(node);
 				return;
 			}
+			
+			if (closed.contains(point))
+				continue;
+			
+			closed.add(point);
+			opened.remove(point);
 
-			for (Point p : grid.expand(point, diagonalMovement)) {				
-				// if either closed or opened sets contain
-				if (closed.contains(p) || !opened.add(p))
+			for (Point p : grid.expand(point, diagonalMovement)) {
+				if (closed.contains(p))
 					continue;
-
-				queue.add(new Node(p, node));
+				
+				stack.add(new Node(p, node));
+				opened.add(p);
 			}
 			
 			if (GenericSearch.sleepTime > 0)

@@ -4,11 +4,9 @@ import java.awt.Point;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.Set;
 import java.util.function.BiFunction;
 
 import core.Node;
-import core.Grid;
 
 public class AStar extends GenericSearch {
 
@@ -20,24 +18,13 @@ public class AStar extends GenericSearch {
 	// ==== Public Static Methods ====
 
 	public static final void search(Search search, BiFunction<Integer, Integer, Double> heuristic) {
-		final Grid grid = search.getStartState();
-		final int diagonalMovement = search.getDiagonalMovement();
-
 		final PriorityQueue<Node> queue = new PriorityQueue<Node>();
+		final Map<Point, Node> map = new HashMap<Point, Node>();
 
-		final Map<Point, Node> opened = new HashMap<Point, Node>();
+		startTime = System.nanoTime();
+		nodesProcessed = 1;
 
-		// final Set<Point> opened = search.getOpened();
-		final Set<Point> closed = search.getClosed();
-
-		final Point start = grid.getStart();
-		final Point goal = grid.getGoal();
-
-		long startTime = System.nanoTime();
-		int nodesProcessed = 1;
-		int weight = 1;
-
-		queue.add(new Node(null, start, 0));
+		queue.add(new Node(grid.start, null));
 
 		while (!queue.isEmpty()) {
 			Node node = queue.poll();
@@ -48,25 +35,8 @@ public class AStar extends GenericSearch {
 			opened.remove(point);
 			closed.add(point);
 
-			if (point.equals(goal)) {
-				System.out.println("Time:\t\t" + (System.nanoTime() - startTime) / 1000000f + "ms");
-				System.out.println("Operations:\t" + nodesProcessed);
-				System.out.println("Memory:\t\t" + queue.size());
-
-				double distance = 0;
-
-				while (node != null) {
-					if (node.parent != null)
-						distance += node.data.distance(node.parent.data);
-					search.getSolution().push(node.data);
-					node = node.parent;
-				}
-
-				search.getOpened().addAll(opened.keySet());
-
-				System.out.println("Distance:\t" + distance);
-				System.out.println("-----");
-
+			if (point.equals(grid.goal)) {
+				backtrace(node);
 				return;
 			}
 
@@ -74,44 +44,43 @@ public class AStar extends GenericSearch {
 				if (closed.contains(p))
 					continue;
 
-				int dx = Math.abs(p.x - goal.x);
-				int dy = Math.abs(p.y - goal.y);
+				int dx = Math.abs(p.x - grid.goal.x);
+				int dy = Math.abs(p.y - grid.goal.y);
 
 				double ng = node.g + ((p.x - point.x == 0 || p.y - point.y == 0) ? 1 : SQRT_2);
 				double f, g, h;
 
-				if (!opened.containsKey(p)) {
+				if (!map.containsKey(p)) {
 					g = Double.MAX_VALUE;
 				} else {
-					g = opened.get(p).g;
+					g = map.get(p).g;
 				}
 
-				if (!opened.containsKey(p) || ng < g) {
+				if (opened.add(p) || ng < g) {
 					g = ng;
-					h = weight * heuristic.apply(dx, dy);
+					h = heuristic.apply(dx, dy);
 					f = g + h;
 
-					Node n = new Node(node, p, node.depth + 1);
+					Node n = new Node(p, node);
 
 					n.f = f;
 					n.g = g;
 					n.h = h;
 
-					if (opened.containsKey(p))
+					if (opened.contains(p))
 						queue.remove(n);
 
-					opened.put(p, n);
+					map.put(p, n);
 					queue.add(n);
-
-					nodesProcessed++;
 				}
 			}
-
-			try {
-				Thread.sleep(1);
-			} catch (InterruptedException e) {
-				break;
-			}
+			
+			if (GenericSearch.sleepTime > 0)
+				try {
+					Thread.sleep(GenericSearch.sleepTime);
+				} catch (InterruptedException e) {
+					break;
+				}
 		}
 
 		System.out.println("no solution found!");
