@@ -3,161 +3,48 @@ package algorithms;
 import java.awt.Point;
 import java.util.Set;
 import java.util.Stack;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 
-import core.Algorithm;
-import core.Heuristic;
 import core.Grid;
+import core.Node;
 
-public class Search {
-
-	// ==== Properties ====
-
-	private final Set<Point> opened;
-	private final Set<Point> closed;
-	private final Stack<Point> solution;
+public abstract class Search {
 	
-	private BiConsumer<Search, BiFunction<Integer, Integer, Double>> search;
-	private BiFunction<Integer, Integer, Double> heuristic;
+	// ==== Static Variables ====
 	
-	private Grid startState;
-	private Thread thread;
+	public static BiFunction<Integer, Integer, Double> heuristic;
+	
+	public static Set<Point> opened, closed;
+	public static Stack<Point> solution;
+	
+	public static int diagonalMovement;
+	public static int nodesProcessed;
+	
+	public static long timeElapsed;
+	public static long sleepTime;
+	
+	public static Grid grid;
+	
+	public static int weight;
+	
+	public static boolean isActive;
+	
+	// ==== Utility Methods ====
+	
+	public static final void backtrace(Node node) {
+		System.out.println("Time:\t" + timeElapsed / 1000000f + "ms");
+		System.out.println("Ops:\t" + nodesProcessed);
 
-	private int diagonalMovement;
-	private int searchHeuristic;
-	private int searchAlgorithm;
+		double distance = 0;
 
-	// ==== Constructor ====
-
-	public Search(Set<Point> opened, Set<Point> closed, Stack<Point> solution) {
-		GenericSearch.opened = opened;
-		GenericSearch.closed = closed;
-		GenericSearch.solution = solution;
-		
-		this.opened = opened;
-		this.closed = closed;
-		this.solution = solution;
-	}
-
-	// ==== Accessors ====
-
-	public Grid getStartState() {
-		return startState;
-	}
-
-	public void setStartState(Grid startState) {
-		this.startState = startState;
-		GenericSearch.grid = startState;
-	}
-
-	public Set<Point> getOpened() {
-		return opened;
-	}
-
-	public Set<Point> getClosed() {
-		return closed;
-	}
-
-	public Stack<Point> getSolution() {
-		return solution;
-	}
-
-	public int getDiagonalMovement() {
-		return diagonalMovement;
-	}
-
-	public void setDiagonalMovement(int diagonalMovement) {
-		this.diagonalMovement = diagonalMovement;
-		GenericSearch.diagonalMovement = diagonalMovement;
-	}
-
-	public int getSearchHeuristic() {
-		return searchHeuristic;
-	}
-
-	public void setSearchHeuristic(int searchHeuristic) {
-		this.searchHeuristic = searchHeuristic;
-
-		switch (searchHeuristic) {
-		case Heuristic.MANHATTAN_DISTANCE:
-			heuristic = Heuristic::manhattanDistance;
-			break;
-		case Heuristic.EUCLIDEAN_DISTANCE:
-			heuristic = Heuristic::euclideanDistance;
-			break;
-		case Heuristic.OCTILE_DISTANCE:
-			System.out.println("here");
-			heuristic = Heuristic::octileDistance;
-			break;
-		case Heuristic.CHEBYSHEV_DISTANCE:
-			heuristic = Heuristic::chebyshevDistance;
-			break;
-		default:
-			heuristic = Heuristic::manhattanDistance;
-			break;
+		while (node != null) {
+			if (node.parent != null)
+				distance += node.data.distance(node.parent.data);
+			solution.push(node.data);
+			node = node.parent;
 		}
-		
-		GenericSearch.heuristic = heuristic;
-	}
 
-	public int getSearchAlgorithm() {
-		return searchAlgorithm;
-	}
-
-	public void setSearchAlgorithm(int searchAlgorithm) {
-		this.searchAlgorithm = searchAlgorithm;
-		
-		switch (searchAlgorithm) {
-		case Algorithm.A_STAR:
-			search = AStar::search;
-			break;
-		case Algorithm.BREADTH_FIRST:
-			search = BreadthFirst::search;
-			break;
-		case Algorithm.DEPTH_FIRST:
-			search = DepthFirst::search;
-			break;
-		case Algorithm.BEST_FIRST:
-			search = BestFirst::search;
-			break;
-		case Algorithm.DIJKSTRA:
-			search = Dijkstra::search;
-			break;
-		default:
-			search = AStar::search;
-			break;
-		}
-	}
-
-	// ==== Public Helper Methods ====
-
-	public boolean isActive() {
-		return thread != null && thread.isAlive();
-	}
-
-	public void stop() {
-		if (!isActive())
-			return;
-
-		thread.interrupt();
-
-		try {
-			thread.join();
-		} catch (InterruptedException e) {
-		}
-	}
-
-	public void start() {
-		Search original = this;
-
-		thread = new Thread() {
-			@Override
-			public void run() {
-				search.accept(original, heuristic);
-			}
-		};
-
-		thread.start();
+		System.out.println("Dist:\t" + distance);
+		System.out.println();
 	}
 }

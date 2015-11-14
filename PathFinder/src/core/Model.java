@@ -7,14 +7,20 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Observable;
 import java.util.Set;
 import java.util.Stack;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 import javax.swing.Timer;
 
+import algorithms.AStar;
+import algorithms.BestFirst;
+import algorithms.BreadthFirst;
+import algorithms.DepthFirst;
+import algorithms.Dijkstra;
 import algorithms.Search;
 
 public class Model extends Observable implements ActionListener {
@@ -25,15 +31,16 @@ public class Model extends Observable implements ActionListener {
 	
 	private final Timer timer = new Timer(50, this);
 	
-	private final Set<Point> opened = Collections.synchronizedSet(new LinkedHashSet<Point>());
-	private final Set<Point> closed = Collections.synchronizedSet(new LinkedHashSet<Point>());
+	private final Set<Point> opened = Collections.synchronizedSet(new HashSet<Point>());
+	private final Set<Point> closed = Collections.synchronizedSet(new HashSet<Point>());
 	private final Stack<Point> solution = new Stack<Point>();
-	private final Search search = new Search(opened, closed, solution);
 
 	private boolean active = true;
 	private int diagonalMovement = DiagonalMovement.ALWAYS;
 	private int searchAlgorithm = Algorithm.A_STAR;
 	private int searchHeuristic = Heuristic.MANHATTAN_DISTANCE;
+	
+	private Thread thread;
 	
 	private final Set<Point> walls = Collections.synchronizedSet(new HashSet<Point>());
 	private final Point start = new Point();
@@ -128,6 +135,13 @@ public class Model extends Observable implements ActionListener {
 	}
 	
 	public synchronized final void setSearchHeuristic(int searchHeuristic) {
+		if (searchHeuristic != Heuristic.MANHATTAN_DISTANCE &&
+			searchHeuristic != Heuristic.EUCLIDEAN_DISTANCE &&
+			searchHeuristic != Heuristic.CHEBYSHEV_DISTANCE &&
+			searchHeuristic != Heuristic.OCTILE_DISTANCE) {
+			throw new IllegalArgumentException("searchHeuristic not recognised");
+		}
+		
 		this.searchHeuristic = searchHeuristic;
 	}
 	
@@ -162,9 +176,10 @@ public class Model extends Observable implements ActionListener {
 	}
 	
 	public synchronized final void addWall(Point point) {
-		// TODO: checking for contains before adds is "less" efficient
-		if (isUnoccupied(point))
-			walls.add(point);
+		if (start.equals(point) || goal.equals(point))
+			return;
+		
+		walls.add(point);
 	}
 	
 	public synchronized final void clearWall(Point point) {
@@ -172,11 +187,10 @@ public class Model extends Observable implements ActionListener {
 	}
 	
 	public synchronized final void clearWalls() {
-		stopSearching();
-		
+		stopSearching();		
 		clearSearches();
 		
-		walls.clear();
+		walls.clear();	
 		
 		setChanged();
 		notifyObservers();
@@ -204,23 +218,12 @@ public class Model extends Observable implements ActionListener {
 	}
 	
 	public synchronized final void generateMaze() {
-		// move start and goals to opposite ends of the map
-		
-		int x0, y0;
-		x0 = y0 = 2;
-		
-		if (dimension.height % 2 == 0)
-			y0 = 3;
-		
-		if (dimension.width % 2 == 0)
-			x0 = 3;
-			
-			
-		goal.setLocation(dimension.width - x0, dimension.height - y0);
-		start.setLocation(1, 1);
-		
 		clearWalls();
-		
+
+		start.setLocation(1, 1);
+		goal.setLocation(dimension.width - (dimension.width % 2 == 0 ? 3 : 2),
+				dimension.height - (dimension.height % 2 == 0 ? 3 : 2));
+				
 		for (int x = 0; x < dimension.width; x++) {
 			for (int y = 0; y < dimension.height; y++) {
 				if (dimension.height % 2 == 0 && y == dimension.height - 1)
@@ -273,15 +276,17 @@ public class Model extends Observable implements ActionListener {
 				points.add(newPoint);
 			}
 
+			// randomise the branching order
 			Collections.shuffle(points);
-
+			
 			for (Point p : points) {
-				if (!visited.contains(p)) {
+				if (visited.add(p)) {
+					// if the current cell is at the outskirts do not remove wall
+					// this ensures that the maze is always enclosed
 					if (p.x == dimension.width - 1 || p.y == dimension.height - 1)
 						continue;
 					
 					walls.remove(new Point((p.x + exit.x) / 2, (p.y + exit.y) / 2));
-					visited.add(p);
 					stack.push(p);
 				}
 			}
@@ -296,7 +301,10 @@ public class Model extends Observable implements ActionListener {
 			setChanged();
 			notifyObservers();
 			
-			if (search.isActive() || active)
+			if (thread != null && thread.isAlive())
+				return;
+			
+			if (Search.isActive)
 				return;
 			
 			timer.stop();
@@ -326,7 +334,7 @@ public class Model extends Observable implements ActionListener {
 	}
 	
 	private void stopSearching() {
-		search.stop();
+		Search.isActive = false;
 		timer.stop();
 	}
 	
@@ -341,19 +349,82 @@ public class Model extends Observable implements ActionListener {
 	}
 	
 	private void startSearching() {
-		if (active) {
-			timer.start();
-			
-			Grid grid = new Grid(dimension, start, goal, walls);
-			
-			search.setDiagonalMovement(diagonalMovement);
-			search.setSearchAlgorithm(searchAlgorithm);
-			search.setSearchHeuristic(searchHeuristic);
-			search.setStartState(grid);
-			
+		if (active) {			
+			// clear the board and reset search states
 			clearSearches();
 			
-			search.start();
+			// set these?
+			Search.opened = opened;
+			Search.closed = closed;
+			Search.solution = solution;
+			
+			// reset these variables
+			Search.grid = new Grid(dimension, start, goal, walls);
+			Search.nodesProcessed = 0;
+			Search.timeElapsed = 0;
+			
+			// retrieve these variables
+			Search.diagonalMovement = diagonalMovement;
+//			GenericSearch.sleepTime = 1;
+			
+			// setting the Heuristics
+			
+			BiFunction<Integer, Integer, Double> heuristic;
+			
+			switch (searchHeuristic) {
+			case Heuristic.MANHATTAN_DISTANCE:
+				heuristic = Heuristic::manhattanDistance;
+				break;
+			case Heuristic.EUCLIDEAN_DISTANCE:
+				heuristic = Heuristic::euclideanDistance;
+				break;
+			case Heuristic.OCTILE_DISTANCE:
+				System.out.println("here");
+				heuristic = Heuristic::octileDistance;
+				break;
+			case Heuristic.CHEBYSHEV_DISTANCE:
+				heuristic = Heuristic::chebyshevDistance;
+				break;
+			default:
+				heuristic = Heuristic::manhattanDistance;
+				break;
+			}
+			
+			Search.heuristic = heuristic;			
+
+			// setting the Search Algorithm to use			
+			Consumer<Search> search;
+			
+			switch (searchAlgorithm) {
+			case Algorithm.A_STAR:
+				search = AStar::search;
+				break;
+			case Algorithm.BREADTH_FIRST:
+				search = BreadthFirst::search;
+				break;
+			case Algorithm.DEPTH_FIRST:
+				search = DepthFirst::search;
+				break;
+			case Algorithm.BEST_FIRST:
+				search = BestFirst::search;
+				break;
+			case Algorithm.DIJKSTRA:
+				search = Dijkstra::search;
+				break;
+			default:
+				search = AStar::search;
+				break;
+			}
+			
+			thread = new Thread() {
+				@Override
+				public void run() {
+					search.accept(null);
+				}
+			};
+			
+			thread.start();
+			timer.start();
 		}
 		
 	}

@@ -9,7 +9,7 @@ import java.awt.Point;
 // TODO: does it need to implement Comparable?
 
 public class Node implements Comparable<Node> {
-	public final Node parent;
+	public Node parent;
 	public final Point data;
 	
 	public double f, g, h;

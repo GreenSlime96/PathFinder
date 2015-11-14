@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Observable;
@@ -17,13 +18,17 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.JTextArea;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
+import algorithms.Search;
 import core.Model;
 
-public class Controls extends Box implements Observer, ActionListener {
+public class Controls extends Box implements Observer, ActionListener, ChangeListener {
 	
 	private static final long serialVersionUID = 4393439353746474082L;
 	
@@ -39,6 +44,7 @@ public class Controls extends Box implements Observer, ActionListener {
 	private final JButton clearButton = new JButton("Clear Walls");
 	private final JButton fitButton = new JButton("Reset Grid");
 	private final JButton mazeButton = new JButton("Create Maze");
+	private final JSlider delaySlider = new JSlider(0, 20);
 	
 	// ==== Constructor ====
 	
@@ -52,6 +58,12 @@ public class Controls extends Box implements Observer, ActionListener {
         
 		this.model = model;
 		model.addObserver(this);
+		
+		delaySlider.setMinorTickSpacing(1);
+		delaySlider.setMajorTickSpacing(5);
+		delaySlider.setPaintTicks(true);
+		delaySlider.setPaintLabels(true);
+		delaySlider.setSnapToTicks(true);
 		
 		algorithmComboBox.addItem("A-Star");
 		algorithmComboBox.addItem("Breadth First");
@@ -72,10 +84,16 @@ public class Controls extends Box implements Observer, ActionListener {
 		addSetting(algorithmComboBox, "Algorithm", "The type of search algorithm to use");
 		addSetting(heuristicComboBox, "Heuristic", "The type of heuristic to use");
 		addSetting(diagonalComboBox, "Diagonals", "Whether or not diagonal searching is allowed");
-		addSetting(startButton, "Start Search", "Starts the search");
-		addSetting(clearButton, "Clear Walls", "Removes the walls");
-		addSetting(fitButton, "Reset Gird", "Resets the Grid to the new window");
-		addSetting(mazeButton, "Generate Maze", "Generates a maze in the grid");
+		
+		JPanel buttons = new JPanel(new GridLayout(2, 2, 2, 2));
+		buttons.setAlignmentX(JComponent.LEFT_ALIGNMENT);
+		buttons.add(startButton);
+		buttons.add(clearButton);
+		buttons.add(fitButton);
+		buttons.add(mazeButton);
+		addSetting(buttons, "Search Settings", "Starts/stops the search and handles on-screen events");
+		
+		addSetting(delaySlider, "Search Delay", "The delay between processing nodes in milliseconds");
 		
 		// vertical spacing
 		add(new JPanel(new GridBagLayout()));
@@ -88,6 +106,8 @@ public class Controls extends Box implements Observer, ActionListener {
 		pauseButton.addActionListener(this);
 		fitButton.addActionListener(this);
 		mazeButton.addActionListener(this);
+		
+		delaySlider.addChangeListener(this);
 	}
 	
 	// ==== Private Helper Methods ====
@@ -157,6 +177,15 @@ public class Controls extends Box implements Observer, ActionListener {
 			model.generateMaze();
 		}
 		
+	}
+	
+	// ==== ChangeListener Implementaiton ====
+
+	@Override
+	public void stateChanged(ChangeEvent e) {
+		if (e.getSource() == delaySlider) {
+			Search.sleepTime = delaySlider.getValue();
+		}		
 	}
 
 }

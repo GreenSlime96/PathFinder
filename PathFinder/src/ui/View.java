@@ -16,6 +16,8 @@ import java.util.Observer;
 import java.util.Stack;
 
 import javax.swing.JComponent;
+
+import algorithms.Search;
 import core.Model;
 
 public class View extends JComponent implements Observer {
@@ -24,7 +26,7 @@ public class View extends JComponent implements Observer {
 	
 	// ==== Constants ====
 	
-	public static final int PIXEL_WIDTH = 20;
+	public static final int PIXEL_WIDTH = 30;
 	
 	public static final Color COLOUR_BORDER = new Color(0, 0, 0, 51);	
 	public static final Color COLOUR_NODE = new Color(0xafeeee);
@@ -130,7 +132,6 @@ public class View extends JComponent implements Observer {
 	
 	// ==== JComponent Override ====
 	
-	@SuppressWarnings("unused")
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
@@ -142,53 +143,33 @@ public class View extends JComponent implements Observer {
 		g.setColor(Color.WHITE);		
 		g.fillRect(0, 0, dimension.width * PIXEL_WIDTH, dimension.height * PIXEL_WIDTH);
 		
+		final long time = System.nanoTime();
 		
-		synchronized (model.getClosed()) {
-			g.setColor(COLOUR_NODE);
-			int i = 0;
-			
-			for (Point opened : model.getClosed()) {
-//				final float balance = (float) i / model.getClosed().size();
-//				g.setColor(Color.getHSBColor(balance * 2 / 3, 1, 1));
-				g.fillRect(opened.x * PIXEL_WIDTH, opened.y * PIXEL_WIDTH, PIXEL_WIDTH, PIXEL_WIDTH);
-				i++;
-			}
-		}
+		g.setColor(COLOUR_NODE);			
+		model.getClosed().forEach(p -> drawPoint(p, g));			
 		
-		synchronized (model.getOpened()) {
-			g.setColor(COLOUR_FRINGE);
-			int i = 0;
-			
-			for (Point opened : model.getOpened()) {
-//				final float balance = (float) i / model.getOpened().size();
-//				g.setColor(Color.getHSBColor(2/3f, 1, balance));
-				g.fillRect(opened.x * PIXEL_WIDTH, opened.y * PIXEL_WIDTH, PIXEL_WIDTH, PIXEL_WIDTH);
-				i++;
-			}
-		}
+		g.setColor(COLOUR_FRINGE);
+		model.getOpened().forEach(p -> drawPoint(p, g));
 		
+		Search.timeElapsed -= (System.nanoTime() - time);
+				
 		g.setColor(COLOUR_START);
-		g.fillRect(start.x * PIXEL_WIDTH, start.y * PIXEL_WIDTH, PIXEL_WIDTH, PIXEL_WIDTH);
+		drawPoint(start, g);
 		
 		g.setColor(COLOUR_GOAL);
-		g.fillRect(goal.x * PIXEL_WIDTH, goal.y * PIXEL_WIDTH, PIXEL_WIDTH, PIXEL_WIDTH);
+		drawPoint(goal, g);
 		
-		synchronized (model.getWalls()) {
-			g.setColor(COLOUR_WALL);
-			for (Point wall : model.getWalls())
-				g.fillRect(wall.x * PIXEL_WIDTH, wall.y * PIXEL_WIDTH, PIXEL_WIDTH, PIXEL_WIDTH);
-		}
+		g.setColor(COLOUR_WALL);
+		model.getWalls().forEach(p -> drawPoint(p, g));
 		
-		if (PIXEL_WIDTH >= 8) {
-			g.setColor(COLOUR_BORDER);
-			for (int y = 0; y < dimension.height; y++) {
-				final int yPos = y * PIXEL_WIDTH;
-	
-				for (int x = 0; x < dimension.width; x++) {
-					final int xPos = x * PIXEL_WIDTH;
-	
-					g.drawRect(xPos, yPos, PIXEL_WIDTH, PIXEL_WIDTH);
-				}
+		g.setColor(COLOUR_BORDER);
+		for (int y = 0; y < dimension.height; y++) {
+			final int yPos = y * PIXEL_WIDTH;
+
+			for (int x = 0; x < dimension.width; x++) {
+				final int xPos = x * PIXEL_WIDTH;
+
+				g.drawRect(xPos, yPos, PIXEL_WIDTH, PIXEL_WIDTH);
 			}
 		}
 		
@@ -209,6 +190,12 @@ public class View extends JComponent implements Observer {
 		}
 	}
 
+	// ==== Private Helper Method ====
+	
+	private void drawPoint(Point p, Graphics g) {
+		g.fillRect(p.x * PIXEL_WIDTH, p.y * PIXEL_WIDTH, PIXEL_WIDTH, PIXEL_WIDTH);
+	}
+	
 	// ==== Observer Implementation ====
 
 	@Override

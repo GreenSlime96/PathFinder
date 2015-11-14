@@ -6,18 +6,17 @@ import java.util.function.BiFunction;
 
 import core.Node;
 
-public class DepthFirst extends GenericSearch {
+public class DepthFirst extends Search {
 
 	// ==== Search Method ====
 
-	public static final void search(Search search, BiFunction<Integer, Integer, Double> heuristic) {
+	public static final void search(Search search) {
 		final Stack<Node> stack = new Stack<Node>();
 		stack.push(new Node(grid.getStart(), null));
 
-		startTime = System.nanoTime();
-		nodesProcessed = 0;
-
 		while (!stack.isEmpty()) {
+			final long startTime = System.nanoTime();
+			
 			Node node = stack.pop();
 			Point point = node.data;
 
@@ -28,10 +27,9 @@ public class DepthFirst extends GenericSearch {
 				return;
 			}
 			
-			if (closed.contains(point))
+			if (!closed.add(point))
 				continue;
 			
-			closed.add(point);
 			opened.remove(point);
 
 			for (Point p : grid.expand(point, diagonalMovement)) {
@@ -42,9 +40,11 @@ public class DepthFirst extends GenericSearch {
 				opened.add(p);
 			}
 			
-			if (GenericSearch.sleepTime > 0)
+			timeElapsed += System.nanoTime() - startTime;
+			
+			if (Search.sleepTime > 0)
 				try {
-					Thread.sleep(GenericSearch.sleepTime);
+					Thread.sleep(Search.sleepTime);
 				} catch (InterruptedException e) {
 					break;
 				}

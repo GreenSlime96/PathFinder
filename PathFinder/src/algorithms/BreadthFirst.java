@@ -7,18 +7,17 @@ import java.util.function.BiFunction;
 
 import core.Node;
 
-public class BreadthFirst extends GenericSearch {
+public class BreadthFirst extends Search {
 	
 	// ==== Search Method ====
 	
-	public static final void search(Search search, BiFunction<Integer, Integer, Double> heuristic) {
+	public static final void search(Search search) {
 		final Queue<Node> queue = new LinkedList<Node>();
-		queue.add(new Node( grid.getStart(), null));
-		
-		startTime = System.nanoTime();
-		nodesProcessed = 0;
+		queue.add(new Node(grid.getStart(), null));
 
 		while (!queue.isEmpty()) {
+			final long startTime = System.nanoTime();
+			
 			Node node = queue.poll();
 			Point point = node.data;
 
@@ -40,9 +39,11 @@ public class BreadthFirst extends GenericSearch {
 				queue.add(new Node(p, node));
 			}
 			
-			if (GenericSearch.sleepTime > 0)
+			timeElapsed += System.nanoTime() - startTime;
+			
+			if (Search.sleepTime > 0)
 				try {
-					Thread.sleep(GenericSearch.sleepTime);
+					Thread.sleep(Search.sleepTime);
 				} catch (InterruptedException e) {
 					break;
 				}

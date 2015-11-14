@@ -4,33 +4,30 @@ import java.awt.Point;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.function.BiFunction;
 
 import core.Node;
 
-public class AStar extends GenericSearch {
+public class AStar extends Search {
 
 	// ==== Constants ====
 
 	public static final double SQRT_2 = Math.sqrt(2);
-	
-	
+
 	// ==== Public Static Methods ====
 
-	public static final void search(Search search, BiFunction<Integer, Integer, Double> heuristic) {
+	public static final void search(Search search) {
 		final PriorityQueue<Node> queue = new PriorityQueue<Node>();
 		final Map<Point, Node> map = new HashMap<Point, Node>();
 
-		startTime = System.nanoTime();
-		nodesProcessed = 1;
-
-		queue.add(new Node(grid.start, null));
+		queue.add(new Node(new Point(grid.start), null));
 
 		while (!queue.isEmpty()) {
+			final long startTime = System.nanoTime();
+			
+			nodesProcessed++;
+
 			Node node = queue.poll();
 			Point point = node.data;
-
-			nodesProcessed++;
 
 			opened.remove(point);
 			closed.add(point);
@@ -43,41 +40,49 @@ public class AStar extends GenericSearch {
 			for (Point p : grid.expand(point, diagonalMovement)) {
 				if (closed.contains(p))
 					continue;
-
-				int dx = Math.abs(p.x - grid.goal.x);
-				int dy = Math.abs(p.y - grid.goal.y);
-
+				
 				double ng = node.g + ((p.x - point.x == 0 || p.y - point.y == 0) ? 1 : SQRT_2);
 				double f, g, h;
 
-				if (!map.containsKey(p)) {
-					g = Double.MAX_VALUE;
-				} else {
-					g = map.get(p).g;
-				}
+				// store this in a boolean so we need not do multiple operations
+				final boolean contains = !opened.add(p);
+				final Node n;
 
-				if (opened.add(p) || ng < g) {
+				if (contains)
+					n = map.get(p);
+				else
+					n = new Node(p, node);
+
+				if (!contains || ng < n.g) {
+					nodesProcessed++;
+					
+					final int dx = Math.abs(p.x - grid.goal.x);
+					final int dy = Math.abs(p.y - grid.goal.y);
+
 					g = ng;
 					h = heuristic.apply(dx, dy);
 					f = g + h;
-
-					Node n = new Node(p, node);
 
 					n.f = f;
 					n.g = g;
 					n.h = h;
 
-					if (opened.contains(p))
+					if (contains)
 						queue.remove(n);
+					else
+						map.put(p, n);
 
-					map.put(p, n);
+					n.parent = node;
 					queue.add(n);
+
 				}
 			}
-			
-			if (GenericSearch.sleepTime > 0)
+
+			timeElapsed += System.nanoTime() - startTime;
+
+			if (Search.sleepTime > 0)
 				try {
-					Thread.sleep(GenericSearch.sleepTime);
+					Thread.sleep(Search.sleepTime);
 				} catch (InterruptedException e) {
 					break;
 				}
