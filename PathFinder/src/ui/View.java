@@ -11,14 +11,15 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Line2D;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Stack;
 
 import javax.swing.JComponent;
 
-import algorithms.Search;
+import core.Grid;
 import core.Model;
+import core.Node;
 
 public class View extends JComponent implements Observer {
 
@@ -26,7 +27,7 @@ public class View extends JComponent implements Observer {
 	
 	// ==== Constants ====
 	
-	public static final int PIXEL_WIDTH = 30;
+	public static final int PIXEL_WIDTH = 10;
 	
 	public static final Color COLOUR_BORDER = new Color(0, 0, 0, 51);	
 	public static final Color COLOUR_NODE = new Color(0xafeeee);
@@ -142,33 +143,38 @@ public class View extends JComponent implements Observer {
 		
 		g.setColor(Color.WHITE);		
 		g.fillRect(0, 0, dimension.width * PIXEL_WIDTH, dimension.height * PIXEL_WIDTH);
+				
+		Grid grid = model.grid;
 		
-		final long time = System.nanoTime();
-		
-		g.setColor(COLOUR_NODE);			
-		model.getClosed().forEach(p -> drawPoint(p, g));			
-		
-		g.setColor(COLOUR_FRINGE);
-		model.getOpened().forEach(p -> drawPoint(p, g));
-		
-		Search.timeElapsed -= (System.nanoTime() - time);
+		for (int y = 0; y < grid.height; y++) {
+			for (int x = 0; x < grid.width; x++) {
+				Node node = grid.getNodeAt(x, y);
+				
+				if (!node.walkable)
+					g.setColor(COLOUR_WALL);
+				else if (node.closed())
+					g.setColor(COLOUR_NODE);
+				else if (node.opened())
+					g.setColor(COLOUR_FRINGE);
+				else
+					continue;
+				
+				drawPoint(x, y, g);
+			}
+		}
 				
 		g.setColor(COLOUR_START);
-		drawPoint(start, g);
+		drawPoint(start.x, start.y, g);
 		
 		g.setColor(COLOUR_GOAL);
-		drawPoint(goal, g);
-		
-		g.setColor(COLOUR_WALL);
-		model.getWalls().forEach(p -> drawPoint(p, g));
+		drawPoint(goal.x, goal.y, g);
 		
 		g.setColor(COLOUR_BORDER);
 		for (int y = 0; y < dimension.height; y++) {
 			final int yPos = y * PIXEL_WIDTH;
-
+			
 			for (int x = 0; x < dimension.width; x++) {
 				final int xPos = x * PIXEL_WIDTH;
-
 				g.drawRect(xPos, yPos, PIXEL_WIDTH, PIXEL_WIDTH);
 			}
 		}
@@ -180,10 +186,10 @@ public class View extends JComponent implements Observer {
 		
 		g.setColor(COLOUR_LINE);		
 		
-		final Stack<Point> solution = model.getSolution();
+		final List<Point> solution = model.getSolution();
 		for (int i = 0; i < solution.size() - 1; i++) {
 			final Point p1 = solution.get(i);
-			final Point p2 = solution.get(i + 1);			
+			final Point p2 = solution.get(i + 1);
 			
 			g2.draw(new Line2D.Float((p1.x + 0.5f) * PIXEL_WIDTH, (p1.y + 0.5f) * PIXEL_WIDTH,
 					(p2.x + 0.5f) * PIXEL_WIDTH, (p2.y + 0.5f) * PIXEL_WIDTH));
@@ -192,8 +198,8 @@ public class View extends JComponent implements Observer {
 
 	// ==== Private Helper Method ====
 	
-	private void drawPoint(Point p, Graphics g) {
-		g.fillRect(p.x * PIXEL_WIDTH, p.y * PIXEL_WIDTH, PIXEL_WIDTH, PIXEL_WIDTH);
+	private void drawPoint(int x, int y, Graphics g) {
+		g.fillRect(x * PIXEL_WIDTH, y * PIXEL_WIDTH, PIXEL_WIDTH, PIXEL_WIDTH);
 	}
 	
 	// ==== Observer Implementation ====

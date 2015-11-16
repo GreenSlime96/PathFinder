@@ -1,10 +1,10 @@
 package algorithms;
 
 import java.awt.Point;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.PriorityQueue;
 
+import core.Grid;
 import core.Node;
 
 public class AStar extends Search {
@@ -15,69 +15,54 @@ public class AStar extends Search {
 
 	// ==== Public Static Methods ====
 
-	public static final void search(Search search) {
+	public List<Point> search(int startX, int startY, int endX, int endY, Grid grid) {
 		final PriorityQueue<Node> queue = new PriorityQueue<Node>();
-		final Map<Point, Node> map = new HashMap<Point, Node>();
+		
+		final Node startNode = grid.getNodeAt(startX, startY);
+		final Node goalNode = grid.getNodeAt(endX, endY);
 
-		queue.add(new Node(new Point(grid.start), null));
+		queue.add(grid.getNodeAt(startX, startY));
+		startNode.open();
 
 		while (!queue.isEmpty()) {
 			final long startTime = System.nanoTime();
 			
-			nodesProcessed++;
-
 			Node node = queue.poll();
-			Point point = node.data;
+			node.close();
 
-			opened.remove(point);
-			closed.add(point);
-
-			if (point.equals(grid.goal)) {
-				backtrace(node);
-				return;
+			if (node == goalNode) {
+				return backtrace(node);
 			}
-
-			for (Point p : grid.expand(point, diagonalMovement)) {
-				if (closed.contains(p))
+			
+			for (Node n : grid.expand(node, diagonalMovement)) {
+				if (n.closed())
 					continue;
 				
-				double ng = node.g + ((p.x - point.x == 0 || p.y - point.y == 0) ? 1 : SQRT_2);
+				double ng = node.g + ((n.x - node.x == 0 || n.y - node.y == 0) ? 1 : SQRT_2);
 				double f, g, h;
 
-				// store this in a boolean so we need not do multiple operations
-				final boolean contains = !opened.add(p);
-				final Node n;
-
-				if (contains)
-					n = map.get(p);
-				else
-					n = new Node(p, node);
-
-				if (!contains || ng < n.g) {
-					nodesProcessed++;
-					
-					final int dx = Math.abs(p.x - grid.goal.x);
-					final int dy = Math.abs(p.y - grid.goal.y);
+				if (!n.opened() || ng < n.g) {					
+					final int dx = Math.abs(n.x - endX);
+					final int dy = Math.abs(n.y - endY);
 
 					g = ng;
-					h = heuristic.apply(dx, dy);
+					h = n.h != 0 ? n.h : heuristic.apply(dx, dy);
 					f = g + h;
 
 					n.f = f;
 					n.g = g;
 					n.h = h;
 
-					if (contains)
+					if (n.opened())
 						queue.remove(n);
 					else
-						map.put(p, n);
+						n.open();
 
 					n.parent = node;
 					queue.add(n);
-
 				}
 			}
-
+			
 			timeElapsed += System.nanoTime() - startTime;
 
 			if (Search.sleepTime > 0)
@@ -89,5 +74,6 @@ public class AStar extends Search {
 		}
 
 		System.out.println("no solution found!");
+		return null;
 	}
 }

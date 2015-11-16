@@ -2,41 +2,48 @@ package algorithms;
 
 import java.awt.Point;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
-import java.util.function.BiFunction;
 
+import core.Grid;
 import core.Node;
 
 public class BreadthFirst extends Search {
 	
 	// ==== Search Method ====
 	
-	public static final void search(Search search) {
+	public List<Point> search(int startX, int startY, int endX, int endY, Grid grid) {
 		final Queue<Node> queue = new LinkedList<Node>();
-		queue.add(new Node(grid.getStart(), null));
+		
+		final Node startNode = grid.getNodeAt(startX, startY);
+		final Node endNode = grid.getNodeAt(endX, endY);
+		
+		queue.add(startNode);
+		startNode.open();
 
 		while (!queue.isEmpty()) {
 			final long startTime = System.nanoTime();
 			
 			Node node = queue.poll();
-			Point point = node.data;
+			node.close();
 
 			nodesProcessed++;
 			
-			opened.remove(point);
-			closed.add(point);
-			
-			if (point.equals(grid.getGoal())) {
-				backtrace(node);				
-				return;
+			if (node == endNode) {								
+				return backtrace(node);
 			}
 
-			for (Point p : grid.expand(point, diagonalMovement)) {				
+			for (Node n : grid.expand(node, diagonalMovement)) {				
 				// if either closed or opened sets contain
-				if (closed.contains(p) || !opened.add(p))
+				if (n.closed() || n.opened())
 					continue;
+				
+				nodesProcessed++;
 
-				queue.add(new Node(p, node));
+				queue.add(n);
+				
+				n.parent = node;
+				n.open();
 			}
 			
 			timeElapsed += System.nanoTime() - startTime;
@@ -48,6 +55,9 @@ public class BreadthFirst extends Search {
 					break;
 				}
 		}
+		
+		System.out.println("no solution found");
+		return null;
 	}
 
 }

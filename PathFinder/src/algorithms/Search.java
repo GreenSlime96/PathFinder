@@ -1,11 +1,13 @@
 package algorithms;
 
 import java.awt.Point;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 import java.util.function.BiFunction;
 
 import core.Grid;
+import core.Heuristic;
 import core.Node;
 
 public abstract class Search {
@@ -14,8 +16,8 @@ public abstract class Search {
 	
 	public static BiFunction<Integer, Integer, Double> heuristic;
 	
-	public static Set<Point> opened, closed;
-	public static Stack<Point> solution;
+	public static Set<Node> opened, closed;
+	public static List<Point> solution;
 	
 	public static int diagonalMovement;
 	public static int nodesProcessed;
@@ -29,22 +31,19 @@ public abstract class Search {
 	
 	public static boolean isActive;
 	
-	// ==== Utility Methods ====
 	
-	public static final void backtrace(Node node) {
-		System.out.println("Time:\t" + timeElapsed / 1000000f + "ms");
-		System.out.println("Ops:\t" + nodesProcessed);
-
-		double distance = 0;
-
-		while (node != null) {
-			if (node.parent != null)
-				distance += node.data.distance(node.parent.data);
-			solution.push(node.data);
-			node = node.parent;
-		}
-
-		System.out.println("Dist:\t" + distance);
-		System.out.println();
-	}
+	// ==== Properties ====
+	
+	public int _diagonalMovement;
+	public int _weight;
+	
+	// ==== Constructor ====
+	
+//	public Search(Search search) {
+//		
+//	}
+	
+	// ==== Abstract Methods ====
+	
+	abstract List<Point> search(int startX, int startY, int endX, int endY, Grid grid);
 }

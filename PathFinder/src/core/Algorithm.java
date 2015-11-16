@@ -10,4 +10,6 @@ public class Algorithm {
 	public static final int BEST_FIRST = 3;
 	public static final int DIJKSTRA = 4;
 	
+	public static final int BI_A_STAR = 5;
+	
 }

@@ -1,43 +1,47 @@
 package algorithms;
 
 import java.awt.Point;
+import java.util.List;
 import java.util.Stack;
-import java.util.function.BiFunction;
 
+import core.Grid;
 import core.Node;
 
 public class DepthFirst extends Search {
 
 	// ==== Search Method ====
 
-	public static final void search(Search search) {
+	public List<Point> search(int startX, int startY, int endX, int endY, Grid grid) {
 		final Stack<Node> stack = new Stack<Node>();
-		stack.push(new Node(grid.getStart(), null));
+		
+		final Node startNode = grid.getNodeAt(startX, startY);
+		final Node endNode = grid.getNodeAt(endX, endY);
+		
+		stack.push(startNode);
+		startNode.open();
 
 		while (!stack.isEmpty()) {
 			final long startTime = System.nanoTime();
 			
 			Node node = stack.pop();
-			Point point = node.data;
-
+			
 			nodesProcessed++;
 
-			if (point.equals(grid.getGoal())) {
-				backtrace(node);
-				return;
+			if (node == endNode) {
+				return backtrace(node);
 			}
 			
-			if (!closed.add(point))
+			if (node.closed())
 				continue;
 			
-			opened.remove(point);
+			node.close();
 
-			for (Point p : grid.expand(point, diagonalMovement)) {
-				if (closed.contains(p))
+			for (Node n : grid.expand(node, diagonalMovement)) {
+				if (node.closed())
 					continue;
 				
-				stack.add(new Node(p, node));
-				opened.add(p);
+				stack.add(n);
+				node.open();
 			}
 			
 			timeElapsed += System.nanoTime() - startTime;
@@ -49,6 +53,8 @@ public class DepthFirst extends Search {
 					break;
 				}
 		}
+		
+		return null;
 	}
 
 }

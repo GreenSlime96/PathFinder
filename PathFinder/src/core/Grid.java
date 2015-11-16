@@ -10,74 +10,43 @@ public class Grid {
 
 	// ==== Properties ====
 
-	public final Dimension dimension;
-
-	public final Set<Point> walls;
-
-	public final Point start;
-	public final Point goal;
+	public final int width, height;
+	
+	public final Node[][] nodes;
 
 	// ==== Constructor ====
+	
+	public Grid(Dimension dimension, Set<Point> walls) {
+		this(dimension.width, dimension.height, walls);
+	}
 
-	public Grid(Dimension dimension, Point start, Point goal, Set<Point> walls) {
-		this.dimension = dimension;
-		this.start = start;
-		this.goal = goal;
-		this.walls = walls;
-
-		if (!isWalkable(start))
-			throw new IllegalArgumentException(start + " is not walkable");
-
-		if (!isWalkable(goal))
-			throw new IllegalArgumentException(goal + " is not walkable");
-
-		for (Point p : walls)
-			if (!isInside(p))
-				throw new IllegalArgumentException(p + " not in " + dimension);
+	public Grid(int width, int height, Set<Point> walls) {
+		this.width = width;
+		this.height = height;
+		
+		this.nodes = buildNodes(walls);
 	}
 
 	// ==== Public Helper Methods ====
-
-	public boolean isWalkable(int x, int y) {
-		final Point point = new Point(x, y);
-		return isWalkable(point);
+	
+	public Node getNodeAt(int x, int y) {
+		return nodes[y][x];
 	}
 
-	public boolean isWalkable(Point point) {
-		return isInside(point) && !(walls.contains(point));
+	public boolean isWalkableAt(int x, int y) {
+		return isInside(x, y) && nodes[y][x].walkable;
 	}
 
-	public boolean isInside(Point point) {
-		return (point.getX() >= 0 && point.getX() < dimension.getWidth() && point.getY() >= 0
-				&& point.getY() < dimension.getHeight());
+	public boolean isInside(int x, int y) {
+		return (x >= 0 && x < width && y >= 0 && y < height);
 	}
-
-	// ==== Accessors ====
-
-	public Dimension getDimension() {
-		return dimension;
+	
+	public void setWalkableAt(int x, int y, boolean walkable) {
+		nodes[y][x].walkable = walkable;
 	}
-
-	public Point getStart() {
-		return start;
-	}
-
-	public Point getGoal() {
-		return goal;
-	}
-
-	public Set<Point> getWalls() {
-		return walls;
-	}
-
-	// ==== Static Methods ====
-
-	public final List<Point> expand(final int diagonalMovement) {
-		return expand(start, diagonalMovement);
-	}
-
-	public final List<Point> expand(final Point point, final int diagonalMovement) {
-		final List<Point> points = new ArrayList<Point>(8);
+	
+	public List<Node> expand(Node node, int diagonalMovement) {
+		final List<Node> list = new ArrayList<Node>(8);
 
 		boolean s0, s1, s2, s3;
 		boolean d0, d1, d2, d3;
@@ -85,35 +54,35 @@ public class Grid {
 		s0 = s1 = s2 = s3 = false;
 		d0 = d1 = d2 = d3 = false;
 
-		final int x = point.x;
-		final int y = point.y;
+		final int x = node.x;
+		final int y = node.y;
 
 		// ↑
-		if (isWalkable(x, y - 1)) {
-			points.add(new Point(x, y - 1));
+		if (isWalkableAt(x, y - 1)) {
+			list.add(nodes[y - 1][x]);
 			s0 = true;
 		}
 
 		// →
-		if (isWalkable(x + 1, y)) {
-			points.add(new Point(x + 1, y));
+		if (isWalkableAt(x + 1, y)) {
+			list.add(nodes[y][x + 1]);
 			s1 = true;
 		}
 
 		// ↓
-		if (isWalkable(x, y + 1)) {
-			points.add(new Point(x, y + 1));
+		if (isWalkableAt(x, y + 1)) {
+			list.add(nodes[y + 1][x]);
 			s2 = true;
 		}
 
 		// ←
-		if (isWalkable(x - 1, y)) {
-			points.add(new Point(x - 1, y));
+		if (isWalkableAt(x - 1, y)) {
+			list.add(nodes[y][x - 1]);
 			s3 = true;
 		}
 
 		if (diagonalMovement == DiagonalMovement.NEVER)
-			return points;
+			return list;
 
 		if (diagonalMovement == DiagonalMovement.ONLY_WHEN_NO_OBSTACLES) {
 			d0 = s3 && s0;
@@ -135,23 +104,42 @@ public class Grid {
 		}
 
 		// ↖
-		if (d0 && isWalkable(x - 1, y - 1))
-			points.add(new Point(x - 1, y - 1));
+		if (d0 && isWalkableAt(x - 1, y - 1))
+			list.add(nodes[y - 1][x - 1]);
 
 		// ↗
-		if (d1 && isWalkable(x + 1, y - 1))
-			points.add(new Point(x + 1, y - 1));
+		if (d1 && isWalkableAt(x + 1, y - 1))
+			list.add(nodes[y - 1][x + 1]);
 
 		// ↘
-		if (d2 && isWalkable(x + 1, y + 1))
-			points.add(new Point(x + 1, y + 1));
+		if (d2 && isWalkableAt(x + 1, y + 1))
+			list.add(nodes[y + 1][x + 1]);
 
 		// ↙
-		if (d3 && isWalkable(x - 1, y + 1))
-			points.add(new Point(x - 1, y + 1));
+		if (d3 && isWalkableAt(x - 1, y + 1))
+			list.add(nodes[y + 1][x - 1]);
 
-		// TODO: shuffle or not to shuffle?
-		// Collections.shuffle(points);
-		return points;
+		return list;
+	}
+	
+	public Grid clone() {
+		return null;
+	}
+	
+	// ==== Private Helper Methods ====
+	
+	private Node[][] buildNodes(Set<Point> matrix) {
+		final Node[][] nodes = new Node[height][width];
+		
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				Point point = new Point(x, y);
+				
+				nodes[y][x] = new Node(x, y);				
+				nodes[y][x].walkable = !matrix.contains(point);
+			}			
+		}
+		
+		return nodes;
 	}
 }

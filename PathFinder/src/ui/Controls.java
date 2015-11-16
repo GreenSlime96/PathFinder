@@ -44,7 +44,7 @@ public class Controls extends Box implements Observer, ActionListener, ChangeLis
 	private final JButton clearButton = new JButton("Clear Walls");
 	private final JButton fitButton = new JButton("Reset Grid");
 	private final JButton mazeButton = new JButton("Create Maze");
-	private final JSlider delaySlider = new JSlider(0, 20);
+	private final JSlider delaySlider = new JSlider(0, 50);
 	
 	// ==== Constructor ====
 	

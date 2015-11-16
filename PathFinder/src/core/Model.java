@@ -12,12 +12,13 @@ import java.util.Observable;
 import java.util.Set;
 import java.util.Stack;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 
 import javax.swing.Timer;
 
 import algorithms.AStar;
 import algorithms.BestFirst;
+import algorithms.BiAStar;
+import algorithms.BiBreadthFirst;
 import algorithms.BreadthFirst;
 import algorithms.DepthFirst;
 import algorithms.Dijkstra;
@@ -31,9 +32,7 @@ public class Model extends Observable implements ActionListener {
 	
 	private final Timer timer = new Timer(50, this);
 	
-	private final Set<Point> opened = Collections.synchronizedSet(new HashSet<Point>());
-	private final Set<Point> closed = Collections.synchronizedSet(new HashSet<Point>());
-	private final Stack<Point> solution = new Stack<Point>();
+	private final List<Point> solution = new ArrayList<Point>();
 
 	private boolean active = true;
 	private int diagonalMovement = DiagonalMovement.ALWAYS;
@@ -45,6 +44,8 @@ public class Model extends Observable implements ActionListener {
 	private final Set<Point> walls = Collections.synchronizedSet(new HashSet<Point>());
 	private final Point start = new Point();
 	private final Point goal = new Point();
+	
+	public Grid grid;
 	
 	// ==== Constructor ====
 	
@@ -64,6 +65,8 @@ public class Model extends Observable implements ActionListener {
 	}
 	
 	public synchronized final void setSize(Dimension dimension) {
+		grid = new Grid(dimension, walls);
+		
 		if (this.dimension == null) {
 			this.dimension = dimension;
 			fit();
@@ -87,6 +90,8 @@ public class Model extends Observable implements ActionListener {
 	}
 	
 	public synchronized final void fit() {
+		clearWalls();
+		
 		final int midX = (dimension.width - 1) / 2;
 		final int midY = (dimension.height - 1) / 2;
 		
@@ -179,10 +184,12 @@ public class Model extends Observable implements ActionListener {
 		if (start.equals(point) || goal.equals(point))
 			return;
 		
+		grid.setWalkableAt(point.x, point.y, false);
 		walls.add(point);
 	}
 	
 	public synchronized final void clearWall(Point point) {
+		grid.setWalkableAt(point.x, point.y, true);
 		walls.remove(point);
 	}
 	
@@ -191,17 +198,10 @@ public class Model extends Observable implements ActionListener {
 		clearSearches();
 		
 		walls.clear();	
+		grid = new Grid(dimension, walls);
 		
 		setChanged();
 		notifyObservers();
-	}
-	
-	public synchronized final Set<Point> getOpened() {
-		return opened;
-	}
-	
-	public synchronized final Set<Point> getClosed() {
-		return closed;
 	}
 	
 	public synchronized final void startSearch() {
@@ -213,7 +213,7 @@ public class Model extends Observable implements ActionListener {
 		pauseSearching();
 	}
 	
-	public synchronized final Stack<Point> getSolution() {
+	public synchronized final List<Point> getSolution() {
 		return solution;
 	}
 	
@@ -234,8 +234,10 @@ public class Model extends Observable implements ActionListener {
 					
 				Point point = new Point(x, y);
 				
-				if (isUnoccupied(point))
+				if (isUnoccupied(point)) {
+					grid.setWalkableAt(point.x, point.y, false);
 					walls.add(point);
+				}
 			}
 		}
 		
@@ -248,6 +250,7 @@ public class Model extends Observable implements ActionListener {
 			Point exit = stack.pop();
 
 			walls.remove(exit);
+			grid.setWalkableAt(exit.x, exit.y, true);
 			visited.add(exit);
 
 			List<Point> points = new ArrayList<Point>(4);
@@ -286,7 +289,9 @@ public class Model extends Observable implements ActionListener {
 					if (p.x == dimension.width - 1 || p.y == dimension.height - 1)
 						continue;
 					
-					walls.remove(new Point((p.x + exit.x) / 2, (p.y + exit.y) / 2));
+					Point np = new Point((p.x + exit.x) / 2, (p.y + exit.y) / 2);
+					walls.remove(np);
+					grid.setWalkableAt(np.x, np.y, true);
 					stack.push(p);
 				}
 			}
@@ -335,12 +340,20 @@ public class Model extends Observable implements ActionListener {
 	
 	private void stopSearching() {
 		Search.isActive = false;
+		
+		if (thread != null) {
+			thread.interrupt();			
+			
+			try {
+				thread.join();
+			} catch (InterruptedException e) {
+			}
+		}
+		
 		timer.stop();
 	}
 	
 	private void clearSearches() {
-		opened.clear();
-		closed.clear();
 		solution.clear();
 	}
 	
@@ -354,18 +367,17 @@ public class Model extends Observable implements ActionListener {
 			clearSearches();
 			
 			// set these?
-			Search.opened = opened;
-			Search.closed = closed;
 			Search.solution = solution;
 			
 			// reset these variables
-			Search.grid = new Grid(dimension, start, goal, walls);
+			Search.grid = new Grid(dimension, walls);
 			Search.nodesProcessed = 0;
 			Search.timeElapsed = 0;
 			
 			// retrieve these variables
 			Search.diagonalMovement = diagonalMovement;
-//			GenericSearch.sleepTime = 1;
+			
+			grid = Search.grid;
 			
 			// setting the Heuristics
 			
@@ -393,33 +405,33 @@ public class Model extends Observable implements ActionListener {
 			Search.heuristic = heuristic;			
 
 			// setting the Search Algorithm to use			
-			Consumer<Search> search;
+			Search search;
 			
 			switch (searchAlgorithm) {
 			case Algorithm.A_STAR:
-				search = AStar::search;
+				search = new BiAStar();
 				break;
 			case Algorithm.BREADTH_FIRST:
-				search = BreadthFirst::search;
+				search = new BiBreadthFirst();
 				break;
 			case Algorithm.DEPTH_FIRST:
-				search = DepthFirst::search;
+				search = new DepthFirst();
 				break;
 			case Algorithm.BEST_FIRST:
-				search = BestFirst::search;
+				search = new BestFirst();
 				break;
 			case Algorithm.DIJKSTRA:
-				search = Dijkstra::search;
+				search = new Dijkstra();
 				break;
 			default:
-				search = AStar::search;
+				search = new AStar();
 				break;
 			}
 			
 			thread = new Thread() {
 				@Override
 				public void run() {
-					search.accept(null);
+					solution.addAll(search.search(start.x, start.y, goal.x, goal.y, Search.grid));
 				}
 			};
 			
