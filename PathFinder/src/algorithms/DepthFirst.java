@@ -6,6 +6,7 @@ import java.util.Stack;
 
 import core.Grid;
 import core.Node;
+import core.Util;
 
 public class DepthFirst extends Search {
 
@@ -21,14 +22,10 @@ public class DepthFirst extends Search {
 		startNode.open();
 
 		while (!stack.isEmpty()) {
-			final long startTime = System.nanoTime();
-			
 			Node node = stack.pop();
 			
-			nodesProcessed++;
-
-			if (node == endNode) {
-				return backtrace(node);
+			if (node == endNode) {								
+				return Util.backtrace(node);
 			}
 			
 			if (node.closed())
@@ -37,24 +34,15 @@ public class DepthFirst extends Search {
 			node.close();
 
 			for (Node n : grid.expand(node, diagonalMovement)) {
-				if (node.closed())
+				if (n.closed())
 					continue;
 				
+				n.open();
 				stack.add(n);
-				node.open();
 			}
-			
-			timeElapsed += System.nanoTime() - startTime;
-			
-			if (Search.sleepTime > 0)
-				try {
-					Thread.sleep(Search.sleepTime);
-				} catch (InterruptedException e) {
-					break;
-				}
 		}
 		
+		System.out.println("no solution found");
 		return null;
 	}
-
 }

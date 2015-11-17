@@ -6,6 +6,7 @@ import java.util.PriorityQueue;
 
 import core.Grid;
 import core.Node;
+import core.Util;
 
 public class AStar extends Search {
 
@@ -25,13 +26,11 @@ public class AStar extends Search {
 		startNode.open();
 
 		while (!queue.isEmpty()) {
-			final long startTime = System.nanoTime();
-			
 			Node node = queue.poll();
 			node.close();
 
 			if (node == goalNode) {
-				return backtrace(node);
+				return Util.backtrace(node);
 			}
 			
 			for (Node n : grid.expand(node, diagonalMovement)) {
@@ -62,15 +61,6 @@ public class AStar extends Search {
 					queue.add(n);
 				}
 			}
-			
-			timeElapsed += System.nanoTime() - startTime;
-
-			if (Search.sleepTime > 0)
-				try {
-					Thread.sleep(Search.sleepTime);
-				} catch (InterruptedException e) {
-					break;
-				}
 		}
 
 		System.out.println("no solution found!");

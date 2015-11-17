@@ -7,6 +7,7 @@ import java.util.Queue;
 
 import core.Grid;
 import core.Node;
+import core.Util;
 
 public class BreadthFirst extends Search {
 	
@@ -21,16 +22,12 @@ public class BreadthFirst extends Search {
 		queue.add(startNode);
 		startNode.open();
 
-		while (!queue.isEmpty()) {
-			final long startTime = System.nanoTime();
-			
+		while (!queue.isEmpty()) {			
 			Node node = queue.poll();
 			node.close();
 
-			nodesProcessed++;
-			
 			if (node == endNode) {								
-				return backtrace(node);
+				return Util.backtrace(node);
 			}
 
 			for (Node n : grid.expand(node, diagonalMovement)) {				
@@ -38,22 +35,11 @@ public class BreadthFirst extends Search {
 				if (n.closed() || n.opened())
 					continue;
 				
-				nodesProcessed++;
-
 				queue.add(n);
 				
 				n.parent = node;
 				n.open();
 			}
-			
-			timeElapsed += System.nanoTime() - startTime;
-			
-			if (Search.sleepTime > 0)
-				try {
-					Thread.sleep(Search.sleepTime);
-				} catch (InterruptedException e) {
-					break;
-				}
 		}
 		
 		System.out.println("no solution found");

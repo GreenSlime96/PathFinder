@@ -45,5 +45,5 @@ public abstract class Search {
 	
 	// ==== Abstract Methods ====
 	
-	abstract List<Point> search(int startX, int startY, int endX, int endY, Grid grid);
+	public abstract List<Point> search(int startX, int startY, int endX, int endY, Grid grid);
 }

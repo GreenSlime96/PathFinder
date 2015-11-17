@@ -14,6 +14,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -45,6 +46,7 @@ public class Controls extends Box implements Observer, ActionListener, ChangeLis
 	private final JButton fitButton = new JButton("Reset Grid");
 	private final JButton mazeButton = new JButton("Create Maze");
 	private final JSlider delaySlider = new JSlider(0, 50);
+	private final JCheckBox biCheckBox = new JCheckBox("Use Bi-Directional Search");
 	
 	// ==== Constructor ====
 	
@@ -94,6 +96,7 @@ public class Controls extends Box implements Observer, ActionListener, ChangeLis
 		addSetting(buttons, "Search Settings", "Starts/stops the search and handles on-screen events");
 		
 		addSetting(delaySlider, "Search Delay", "The delay between processing nodes in milliseconds");
+		addSetting(biCheckBox, "Bidirectional Search", "Starts the search from both the start and goal states");
 		
 		// vertical spacing
 		add(new JPanel(new GridBagLayout()));
@@ -108,6 +111,8 @@ public class Controls extends Box implements Observer, ActionListener, ChangeLis
 		mazeButton.addActionListener(this);
 		
 		delaySlider.addChangeListener(this);
+		
+		biCheckBox.addActionListener(this);
 	}
 	
 	// ==== Private Helper Methods ====
@@ -151,6 +156,7 @@ public class Controls extends Box implements Observer, ActionListener, ChangeLis
 			algorithmComboBox.setSelectedIndex(model.getSearchAlgorithm());
 			diagonalComboBox.setSelectedIndex(model.getDiagonalMovement());
 			heuristicComboBox.setSelectedIndex(model.getSearchHeuristic());
+			biCheckBox.setSelected(model.getBiSearch());
 		}		
 	}
 	
@@ -175,6 +181,8 @@ public class Controls extends Box implements Observer, ActionListener, ChangeLis
 			model.fit();
 		} else if (source == mazeButton) {
 			model.generateMaze();
+		} else if (source == biCheckBox) {
+			model.setBiSearch(biCheckBox.isSelected());
 		}
 		
 	}

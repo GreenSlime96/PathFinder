@@ -27,7 +27,7 @@ public class View extends JComponent implements Observer {
 	
 	// ==== Constants ====
 	
-	public static final int PIXEL_WIDTH = 10;
+	public static final int PIXEL_WIDTH = 20;
 	
 	public static final Color COLOUR_BORDER = new Color(0, 0, 0, 51);	
 	public static final Color COLOUR_NODE = new Color(0xafeeee);

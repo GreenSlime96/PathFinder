@@ -35,6 +35,7 @@ public class Model extends Observable implements ActionListener {
 	private final List<Point> solution = new ArrayList<Point>();
 
 	private boolean active = true;
+	private boolean biSearch = false;
 	private int diagonalMovement = DiagonalMovement.ALWAYS;
 	private int searchAlgorithm = Algorithm.A_STAR;
 	private int searchHeuristic = Heuristic.MANHATTAN_DISTANCE;
@@ -298,6 +299,14 @@ public class Model extends Observable implements ActionListener {
 		}
 	}
 	
+	public synchronized final boolean getBiSearch() {
+		return biSearch;
+	}
+	
+	public synchronized final void setBiSearch(boolean biSearch) {
+		this.biSearch = biSearch;
+	}
+	
 	// ==== ActionListener Implementation ====
 	
 	@Override
@@ -409,10 +418,18 @@ public class Model extends Observable implements ActionListener {
 			
 			switch (searchAlgorithm) {
 			case Algorithm.A_STAR:
-				search = new BiAStar();
+				if (biSearch)
+					search = new BiAStar();
+				else
+					search = new AStar();
+				
 				break;
 			case Algorithm.BREADTH_FIRST:
-				search = new BiBreadthFirst();
+				if (biSearch)
+					search = new BiBreadthFirst();
+				else
+					search = new BreadthFirst();
+				
 				break;
 			case Algorithm.DEPTH_FIRST:
 				search = new DepthFirst();
@@ -428,10 +445,17 @@ public class Model extends Observable implements ActionListener {
 				break;
 			}
 			
+			// TODO: rely less on static types, those were just for practice! 
 			thread = new Thread() {
 				@Override
 				public void run() {
-					solution.addAll(search.search(start.x, start.y, goal.x, goal.y, Search.grid));
+					final long startTime = System.nanoTime();
+					final List<Point> solutions = search.search(start.x, start.y, goal.x, goal.y, Search.grid);
+					System.out.println("time:\t" + (System.nanoTime() - startTime) / 1000000f + "ms");
+					System.out.println("ops:\t" + Search.nodesProcessed);
+					
+					if (solutions != null)
+						solution.addAll(solutions);
 				}
 			};
 			

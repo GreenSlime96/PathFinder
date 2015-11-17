@@ -1,12 +1,18 @@
 package core;
 
 import java.awt.Point;
+import java.util.ArrayList;
+import java.util.List;
 
 import algorithms.Search;
 
 // ==== Node Implementation ====
 
 public class Node implements Comparable<Node> {	
+	
+	// ==== Public Static Members ====
+	
+	public static List<String> operations = new ArrayList<String>();
 	
 	// ==== Constants ====
 	
@@ -72,11 +78,11 @@ public class Node implements Comparable<Node> {
 	}
 	
 	public boolean closed() {
-		return isBitSet(2);
+		return closed != 0;
 	}
 	
 	public boolean opened() {
-		return isBitSet(1);
+		return opened != 0;
 	}
 	
 	// ==== Private Helper Methods ====
